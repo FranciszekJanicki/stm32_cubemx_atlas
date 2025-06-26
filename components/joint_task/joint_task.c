@@ -4,6 +4,7 @@
 #include "task.h"
 #include "tim.h"
 #include <assert.h>
+#include <stdio.h>
 #include <string.h>
 
 static TaskHandle_t joint_task;
@@ -28,6 +29,7 @@ static void joint_task_func(void* ctx)
     float position = 0.0F, step = 1.0F;
 
     while (1) {
+        puts("EEEEE\n\r");
         manager.position = position;
         joint_manager_process(&manager);
 

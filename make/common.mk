@@ -7,7 +7,9 @@ BUILD_DIR := $(PROJECT_DIR)/build
 SCRIPTS_DIR := $(PROJECT_DIR)/scripts
 
 PROJECT_NAME := project
-PROJECT_BINARY := $(BUILD_DIR)/app/main/main.elf
+PROJECT_BINARY := $(BUILD_DIR)/main/main.elf
 
+UART_BAUD_RATE := 115200
 UART_PORT := /dev/ttyACM0
+USB_BAUD_RATE := 115200
 USB_PORT := /dev/ttyACM0

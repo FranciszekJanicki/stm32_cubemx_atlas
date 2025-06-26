@@ -9,6 +9,7 @@
 #include "task.h"
 #include "tim.h"
 #include "usart.h"
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
