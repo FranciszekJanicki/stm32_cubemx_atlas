@@ -1,23 +1,18 @@
-add_library(joint_task STATIC)
+add_library(queue_manager STATIC)
 
-target_sources(joint_task PRIVATE 
-    joint_task.c
-    joint_manager.c
+target_sources(queue_manager PRIVATE 
+    queue_manager.c
 )
 
-target_include_directories(joint_task PUBLIC
+target_include_directories(queue_manager PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(joint_task PUBLIC
-    motor_driver
-    a4988
-    step_motor
-    pid_regulator
+target_link_libraries(queue_manager PUBLIC
     stm32cubemx
 )
 
-target_compile_options(joint_task PUBLIC
+target_compile_options(queue_manager PUBLIC
     -std=c23
     -Wall
     -Wextra

@@ -193,9 +193,9 @@ static joint_err_t joint_manager_event_update_handler(joint_manager_t* manager,
 
 static joint_err_t joint_manager_notify_delta_timer_handler(joint_manager_t* manager)
 {
-    // if (!manager->is_running) {
-    //     return JOINT_ERR_NOT_RUNNING;
-    // }
+    if (!manager->is_running) {
+        return JOINT_ERR_NOT_RUNNING;
+    }
 
     motor_driver_set_position(&manager->driver, manager->position, manager->delta_time);
 
@@ -204,9 +204,9 @@ static joint_err_t joint_manager_notify_delta_timer_handler(joint_manager_t* man
 
 static joint_err_t joint_manager_notify_pwm_pulse_handler(joint_manager_t* manager)
 {
-    // if (!manager->is_running) {
-    //     return JOINT_ERR_NOT_RUNNING;
-    // }
+    if (!manager->is_running) {
+        return JOINT_ERR_NOT_RUNNING;
+    }
 
     step_motor_update_step_count(&manager->motor);
 
@@ -246,32 +246,12 @@ joint_err_t joint_manager_event_handler(joint_manager_t* manager, joint_event_t 
     return JOINT_ERR_UNKNOWN_EVENT;
 }
 
-joint_err_t joint_manager_process(joint_manager_t* manager)
-{
-    joint_err_t err;
-
-    uint32_t notify;
-    if (xTaskNotifyWait(0x00, JOINT_NOTIFY_ALL, &notify, pdMS_TO_TICKS(1))) {
-        err = joint_manager_notify_handler(manager, notify);
-        if (err != JOINT_ERR_OK) {
-            return err;
-        }
-    }
-
-    // joint_event_t event;
-    // if (xQueuePeek(manager->joint_queue, &event, pdMS_TO_TICKS(1))) {
-    //     err = joint_manager_event_handler(manager, &event);
-    // }
-
-    return err;
-}
-
 joint_err_t joint_manager_initialize(joint_manager_t* manager)
 {
     manager->is_running = false;
 
-    HAL_TIM_Base_Start_IT(manager->delta_timer);
-    HAL_TIM_PWM_Start_IT(manager->pwm_timer, manager->pwm_channel);
+    // HAL_TIM_Base_Start_IT(manager->delta_timer);
+    // HAL_TIM_PWM_Start_IT(manager->pwm_timer, manager->pwm_channel);
 
     a4988_initialize(&manager->a4988,
                      &(a4988_config_t){.pin_dir = manager->dir_pin},

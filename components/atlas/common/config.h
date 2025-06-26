@@ -1,0 +1,14 @@
+#ifndef ATLAS_COMMON_CONFIG_H
+#define ATLAS_COMMON_CONFIG_H
+
+typedef enum {
+    JOINT_NUM_1,
+    JOINT_NUM_2,
+    JOINT_NUM_3,
+    JOINT_NUM_4,
+    JOINT_NUM_5,
+    JOINT_NUM_6,
+    JOINT_NUM,
+} joint_num_t;
+
+#endif // ATLAS_COMMON_CONFIG_H
