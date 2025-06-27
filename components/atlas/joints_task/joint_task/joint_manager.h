@@ -3,12 +3,13 @@
 
 #include "FreeRTOS.h"
 #include "a4988.h"
-#include "joint_config.h"
+#include "atlas_err.h"
 #include "motor_driver.h"
 #include "pid_regulator.h"
 #include "queue.h"
 #include "step_motor.h"
 #include "task.h"
+#include <stdbool.h>
 #include <stdint.h>
 #include <stm32l4xx_hal.h>
 
@@ -32,7 +33,20 @@ typedef struct {
     QueueHandle_t joint_queue;
 } joint_manager_t;
 
-joint_err_t joint_manager_initialize(joint_manager_t* manager, joint_config_t const* config);
-joint_err_t joint_manager_process(joint_manager_t* manager);
+typedef struct {
+    float32_t kp;
+    float32_t ki;
+    float32_t kd;
+    float32_t kc;
+    float32_t min_angle;
+    float32_t max_angle;
+    float32_t min_speed;
+    float32_t max_speed;
+    float32_t step_change;
+    float32_t current_limit;
+} joint_config_t;
+
+atlas_err_t joint_manager_initialize(joint_manager_t* manager, joint_config_t const* config);
+atlas_err_t joint_manager_process(joint_manager_t* manager);
 
 #endif // JOINT_TASK_JOINT_MANAGER_H

@@ -1,6 +1,7 @@
 #ifndef JOINT_TASK_JOINT_TASK_H
 #define JOINT_TASK_JOINT_TASK_H
 
+#include "atlas_event.h"
 #include "joint_manager.h"
 
 #define JOINT_TASK_STACK_DEPTH (4096U / sizeof(StackType_t))

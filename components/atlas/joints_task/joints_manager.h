@@ -2,10 +2,8 @@
 #define JOINTS_TASK_JOINTS_MANAGER_H
 
 #include "FreeRTOS.h"
-#include "config.h"
-#include "joint_manager.h"
-#include "joint_task.h"
-#include "joints_config.h"
+#include "atlas_config.h"
+#include "atlas_err.h"
 #include "queue.h"
 #include "task.h"
 #include <stdbool.h>
@@ -19,7 +17,7 @@ typedef struct {
     } joint_ctxs[JOINT_NUM];
 } joints_manager_t;
 
-joints_err_t joints_manager_initialize(joints_manager_t* manager);
-joints_err_t joints_manager_process(joints_manager_t* manager);
+atlas_err_t joints_manager_initialize(joints_manager_t* manager);
+atlas_err_t joints_manager_process(joints_manager_t* manager);
 
 #endif // JOINTS_TASK_JOINTS_MANAGER_H

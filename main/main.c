@@ -1,14 +1,13 @@
 #include "main.h"
 #include "FreeRTOS.h"
-#include "config.h"
+#include "atlas_notify.h"
 #include "gpio.h"
-#include "joint_manager.h"
 #include "joints_task.h"
+#include "kinematics_task.h"
 #include "task.h"
 #include "task_manager.h"
 #include "tim.h"
 #include "usart.h"
-#include <assert.h>
 #include <stdio.h>
 
 int main(void)
@@ -23,7 +22,10 @@ int main(void)
 
     HAL_Delay(500);
 
+    kinematics_queue_initialize();
     joints_queue_initialize();
+
+    kinematics_task_initialize();
     joints_task_initialize();
 
     vTaskStartScheduler();

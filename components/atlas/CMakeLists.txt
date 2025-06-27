@@ -1,5 +1,6 @@
 add_subdirectory(common)
 add_subdirectory(joints_task)
 add_subdirectory(kinematics_task)
+add_subdirectory(uart_task)
 add_subdirectory(task_manager)
 add_subdirectory(queue_manager)

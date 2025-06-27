@@ -13,6 +13,10 @@ target_include_directories(joints_task PUBLIC
 
 target_link_libraries(joints_task PUBLIC
     joint_task
+    common
+    stm32cubemx
+    task_manager
+    queue_manager
 )
 
 target_compile_options(joints_task PUBLIC

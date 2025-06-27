@@ -1,9 +1,6 @@
 #ifndef JOINTS_TASK_JOINTS_TASK_H
 #define JOINTS_TASK_JOINTS_TASK_H
 
-#include "config.h"
-#include "joints_manager.h"
-
 void joints_task_initialize(void);
 void joints_queue_initialize(void);
 

@@ -1,24 +1,21 @@
-add_library(joint_task STATIC)
+add_library(uart_task STATIC)
 
-target_sources(joint_task PRIVATE 
-    joint_task.c
-    joint_manager.c
+target_sources(uart_task PRIVATE 
+
 )
 
-target_include_directories(joint_task PUBLIC
+target_include_directories(uart_task PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(joint_task PUBLIC
-    motor_driver
-    a4988
-    step_motor
-    pid_regulator
-    stm32cubemx
+target_link_libraries(uart_task PUBLIC
     common
+    stm32cubemx
+    task_manager
+    queue_manager
 )
 
-target_compile_options(joint_task PUBLIC
+target_compile_options(uart_task PUBLIC
     -std=c23
     -Wall
     -Wextra

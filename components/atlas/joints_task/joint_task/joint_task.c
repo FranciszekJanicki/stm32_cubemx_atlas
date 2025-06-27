@@ -2,7 +2,6 @@
 #include "FreeRTOS.h"
 #include "joint_manager.h"
 #include "task.h"
-#include "task_manager.h"
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>

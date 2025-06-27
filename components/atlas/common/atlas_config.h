@@ -1,5 +1,5 @@
-#ifndef ATLAS_COMMON_CONFIG_H
-#define ATLAS_COMMON_CONFIG_H
+#ifndef ATLAS_COMMON_ATLAS_CONFIG_H
+#define ATLAS_COMMON_ATLAS_CONFIG_H
 
 typedef enum {
     JOINT_NUM_1,
@@ -11,4 +11,4 @@ typedef enum {
     JOINT_NUM,
 } joint_num_t;
 
-#endif // ATLAS_COMMON_CONFIG_H
+#endif // ATLAS_COMMON_ATLAS_CONFIG_H

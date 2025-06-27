@@ -7,7 +7,11 @@ target_sources(main PRIVATE
 target_link_libraries(main PRIVATE
     stm32cubemx
     joints_task
-    joint_task
+    kinematics_task
+    uart_task
+    common
+    task_manager
+    queue_manager
 )
 
 target_compile_options(main PUBLIC

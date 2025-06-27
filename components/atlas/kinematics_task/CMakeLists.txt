@@ -13,6 +13,8 @@ target_link_libraries(kinematics_task PUBLIC
     common
     stm32cubemx
     joints_task
+    task_manager
+    queue_manager
 )
 
 target_compile_options(kinematics_task PUBLIC
