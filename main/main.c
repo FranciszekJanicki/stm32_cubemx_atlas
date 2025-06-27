@@ -1,12 +1,12 @@
 #include "main.h"
 #include "FreeRTOS.h"
+#include "config.h"
 #include "gpio.h"
-#include "joint_task.h"
+#include "joints_task.h"
 #include "task.h"
+#include "task_manager.h"
 #include "tim.h"
 #include "usart.h"
-#include "config.h"
-#include "task_manager.h"
 #include <assert.h>
 #include <stdio.h>
 
@@ -22,8 +22,8 @@ int main(void)
 
     HAL_Delay(500);
 
-    assert(joint_queues_initialize() == JOINT_ERR_OK);
-    assert(joint_tasks_initialize() == JOINT_ERR_OK);
+    joints_queue_initialize();
+    joints_task_initialize();
 
     vTaskStartScheduler();
 }

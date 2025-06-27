@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 typedef enum {
+    QUEUE_TYPE_JOINTS,
     QUEUE_TYPE_JOINT_1,
     QUEUE_TYPE_JOINT_2,
     QUEUE_TYPE_JOINT_3,

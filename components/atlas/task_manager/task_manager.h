@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 typedef enum {
+    TASK_TYPE_JOINTS,
     TASK_TYPE_JOINT_1,
     TASK_TYPE_JOINT_2,
     TASK_TYPE_JOINT_3,

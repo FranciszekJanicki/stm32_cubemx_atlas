@@ -1,15 +1,20 @@
-add_executable(main)
+add_subdirectory(joint_task)
 
-target_sources(main PRIVATE 
-    main.c
+add_library(joints_task STATIC)
+
+target_sources(joints_task PRIVATE 
+    joints_task.c
 )
 
-target_link_libraries(main PRIVATE
-    stm32cubemx
-    joints_task
+target_include_directories(joints_task PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_compile_options(main PUBLIC
+target_link_libraries(joints_task PUBLIC
+    joint_task
+)
+
+target_compile_options(joints_task PUBLIC
     -std=c23
     -Wall
     -Wextra

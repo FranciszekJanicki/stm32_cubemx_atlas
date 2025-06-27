@@ -6,6 +6,7 @@
 #include "task_manager.h"
 #include "tim.h"
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -40,13 +41,20 @@ static joint_manager_config_t joint_manager_configs[JOINT_NUM] = {
     [JOINT_NUM_6] = {},
 };
 
+#define JOINT_TASK_STACK_DEPTH (4096U / sizeof(StackType_t))
+#define JOINT_TASK_PRIORITY (1U)
+
 static TaskHandle_t joint_tasks[JOINT_NUM];
 static StaticTask_t joint_task_buffers[JOINT_NUM];
-static StackType_t joint_task_stacks[JOINT_NUM][1024U / sizeof(StackType_t)];
+static StackType_t joint_task_stacks[JOINT_NUM][JOINT_TASK_STACK_DEPTH];
+
+#define JOINT_QUEUE_ITEMS (1U)
+#define JOINT_QUEUE_ITEM_SIZE (sizeof(joint_event_t))
+#define JOINT_QUEUE_STORAGE_SIZE (JOINT_QUEUE_ITEMS * JOINT_QUEUE_ITEM_SIZE)
 
 static QueueHandle_t joint_queues[JOINT_NUM];
 static StaticQueue_t joint_queue_buffers[JOINT_NUM];
-static uint8_t joint_queue_storages[JOINT_NUM][1U * sizeof(joint_event_t)];
+static uint8_t joint_queue_storages[JOINT_NUM][JOINT_QUEUE_STORAGE_SIZE];
 
 static void joint_task_func(void* param)
 {
@@ -72,11 +80,16 @@ static void joint_task_func(void* param)
 
 joint_err_t joint_task_initialize(joint_num_t num)
 {
+    char joint_task_name[20U];
+    snprintf(joint_task_name, sizeof(joint_task_name), "%s_%d", "joint_task", num);
+
+    void* joint_task_arg = (void*)num;
+
     joint_tasks[num] = xTaskCreateStatic(joint_task_func,
-                                         "joint_task",
-                                         sizeof(joint_task_stacks[num]) / sizeof(StackType_t),
-                                         (void*)num,
-                                         1U,
+                                         joint_task_name,
+                                         JOINT_TASK_STACK_DEPTH,
+                                         joint_task_arg,
+                                         JOINT_TASK_PRIORITY,
                                          joint_task_stacks[num],
                                          &joint_task_buffers[num]);
 
@@ -91,8 +104,8 @@ joint_err_t joint_task_initialize(joint_num_t num)
 
 joint_err_t joint_queue_initialize(joint_num_t num)
 {
-    joint_queues[num] = xQueueCreateStatic(1U,
-                                           sizeof(joint_event_t),
+    joint_queues[num] = xQueueCreateStatic(JOINT_QUEUE_ITEMS,
+                                           JOINT_QUEUE_ITEM_SIZE,
                                            joint_queue_storages[num],
                                            &joint_queue_buffers[num]);
 
@@ -105,30 +118,8 @@ joint_err_t joint_queue_initialize(joint_num_t num)
     return JOINT_ERR_OK;
 }
 
-joint_err_t joint_tasks_initialize(void)
-{
-    joint_err_t err;
-
-    for (joint_num_t num = 0; num < JOINT_NUM; ++num) {
-        err = joint_task_initialize(num);
-        if (err != JOINT_ERR_OK) {
-            return err;
-        }
-    }
-
-    return err;
-}
-
-joint_err_t joint_queues_initialize(void)
-{
-    joint_err_t err;
-
-    for (joint_num_t num = 0; num < JOINT_NUM; ++num) {
-        err = joint_queue_initialize(num);
-        if (err != JOINT_ERR_OK) {
-            return err;
-        }
-    }
-
-    return err;
-}
+#undef JOINT_TASK_STACK_DEPTH
+#undef JOINT_TASK_PRIORITY
+#undef JOINT_QUEUE_ITEMS
+#undef JOINT_QUEUE_ITEM_SIZE
+#undef JOINT_QUEUE_STORAGE_SIZE
