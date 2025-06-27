@@ -14,12 +14,12 @@
 
 static inline bool joints_manager_send_joint_event(QueueHandle_t queue, joint_event_t const* event)
 {
-    // return xQueueSend(queue, event, pdMS_TO_TICKS(1)) == pdTRUE;
+    return xQueueSend(queue, event, pdMS_TO_TICKS(1)) == pdTRUE;
 }
 
 static inline bool joints_manager_send_joint_notify(TaskHandle_t task, joint_notify_t notify)
 {
-    // return xTaskNotify(task, notify, eSetBits) == pdTRUE;
+    return xTaskNotify(task, notify, eSetBits) == pdTRUE;
 }
 
 static inline bool joints_manager_receive_joints_event(joints_event_t* event)
@@ -187,13 +187,15 @@ atlas_err_t joints_manager_initialize(joints_manager_t* manager)
 
     manager->is_running = false;
 
-    // for (joint_num_t num = 0; num < JOINT_NUM; ++num) {
-    //     joint_task_initialize(&joint_task_ctxs[num]);
-    //     joint_queue_initialize(&joint_task_ctxs[num]);
+    portENTER_CRITICAL();
+    for (joint_num_t num = 0; num < JOINT_NUM; ++num) {
+        joint_task_initialize(&joint_task_ctxs[num]);
+        joint_queue_initialize(&joint_task_ctxs[num]);
 
-    //     manager->joint_ctxs[num].task = joint_task_ctxs[num].task;
-    //     manager->joint_ctxs[num].queue = joint_task_ctxs[num].queue;
-    // }
+        manager->joint_ctxs[num].task = joint_task_ctxs[num].task;
+        manager->joint_ctxs[num].queue = joint_task_ctxs[num].queue;
+    }
+    portEXIT_CRITICAL();
 
     return ATLAS_ERR_OK;
 }

@@ -1,8 +1,9 @@
 #include "FreeRTOS.h"
 #include "atlas_config.h"
-#include "stm32l4xx_hal.h"
+#include "stdio.h"
 #include "stream_buffer.h"
 #include "stream_buffer_manager.h"
+#include "task.h"
 #include "usart.h"
 
 int _write(int file, char* ptr, int len)
@@ -14,8 +15,20 @@ int _write(int file, char* ptr, int len)
                           len,
                           pdMS_TO_TICKS(1));
     }
-    // HAL_UART_Transmit(&huart2, ptr, len, 100);
 #endif
-
     return len;
+}
+
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char* pcTaskName)
+{
+    printf("Stack overflow in task: %s\n", pcTaskName);
+    while (1)
+        ;
+}
+
+void vApplicationMallocFailedHook(void)
+{
+    printf("Malloc failed!\n");
+    while (1)
+        ;
 }
