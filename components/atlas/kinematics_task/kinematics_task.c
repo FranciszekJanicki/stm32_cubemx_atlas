@@ -13,18 +13,17 @@
 #define KINEMATICS_TASK_STACK_DEPTH (4096U / sizeof(StackType_t))
 #define KINEMATICS_TASK_PRIORITY (1U)
 
-#define KINEMATICS_QUEUE_ITEMS (1U)
+#define KINEMATICS_QUEUE_ITEMS (10U)
 #define KINEMATICS_QUEUE_ITEM_SIZE (sizeof(kinematics_event_t))
 #define KINEMATICS_QUEUE_STORAGE_SIZE (KINEMATICS_QUEUE_ITEMS * KINEMATICS_QUEUE_ITEM_SIZE)
 
 static void kinematics_task_func(void*)
 {
     kinematics_manager_t kinematics_manager;
-    //  kinematics_manager_initialize(&kinematics_manager);
+    kinematics_manager_initialize(&kinematics_manager);
 
     while (1) {
-        printf("DUPA\n\r");
-        // kinematics_manager_process(&kinematics_manager);
+        kinematics_manager_process(&kinematics_manager);
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }

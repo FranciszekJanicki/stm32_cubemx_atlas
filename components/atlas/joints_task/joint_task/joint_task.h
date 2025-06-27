@@ -7,7 +7,7 @@
 #define JOINT_TASK_STACK_DEPTH (4096U / sizeof(StackType_t))
 #define JOINT_TASK_PRIORITY (1U)
 
-#define JOINT_QUEUE_ITEMS (1U)
+#define JOINT_QUEUE_ITEMS (10U)
 #define JOINT_QUEUE_ITEM_SIZE (sizeof(joint_event_t))
 #define JOINT_QUEUE_STORAGE_SIZE (JOINT_QUEUE_ITEMS * JOINT_QUEUE_ITEM_SIZE)
 

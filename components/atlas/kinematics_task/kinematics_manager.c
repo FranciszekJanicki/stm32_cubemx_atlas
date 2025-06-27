@@ -55,12 +55,14 @@ static inline void kinematics_manager_get_joints_event_update_payload(
 
 static atlas_err_t kinematics_manager_event_start_handler(kinematics_manager_t* manager)
 {
+    printf("kinematics_manager_event_start_handler\n\r");
+
     if (manager->is_running) {
         return ATLAS_ERR_ALREADY_RUNNING;
     }
 
     static joints_event_t event = {.type = JOINTS_EVENT_TYPE_START};
-    if (kinematics_manager_send_joints_event(&event)) {
+    if (!kinematics_manager_send_joints_event(&event)) {
         return ATLAS_ERR_FAIL;
     }
 
@@ -71,16 +73,18 @@ static atlas_err_t kinematics_manager_event_start_handler(kinematics_manager_t* 
 
 static atlas_err_t kinematics_manager_event_stop_handler(kinematics_manager_t* manager)
 {
+    printf("kinematics_manager_event_stop_handler\n\r");
+
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
     }
 
     static joints_event_t event = {.type = JOINTS_EVENT_TYPE_STOP};
-    if (kinematics_manager_send_joints_event(&event)) {
+    if (!kinematics_manager_send_joints_event(&event)) {
         return ATLAS_ERR_FAIL;
     }
 
-    manager->is_running = true;
+    manager->is_running = false;
 
     return ATLAS_ERR_OK;
 }
@@ -89,13 +93,15 @@ static atlas_err_t kinematics_manager_event_update_handler(
     kinematics_manager_t* manager,
     kinematics_event_payload_t const* payload)
 {
+    printf("kinematics_manager_event_update_handler\n\r");
+
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
     }
 
     static joints_event_t event = {.type = JOINTS_EVENT_TYPE_UPDATE};
     kinematics_manager_get_joints_event_update_payload(&event.payload);
-    if (kinematics_manager_send_joints_event(&event)) {
+    if (!kinematics_manager_send_joints_event(&event)) {
         return ATLAS_ERR_FAIL;
     }
 
@@ -118,17 +124,24 @@ atlas_err_t kinematics_manager_process(kinematics_manager_t* manager)
 {
     assert(manager);
 
-    kinematics_notify_t notify;
-    if (kinematics_manager_receive_kinematics_notify(&notify)) {
-        atlas_err_t err = kinematics_manager_notify_handler(manager, notify);
-        if (err != ATLAS_ERR_OK) {
-            return err;
-        }
-    }
+    // kinematics_notify_t notify;
+    // if (kinematics_manager_receive_kinematics_notify(&notify)) {
+    //     atlas_err_t err = kinematics_manager_notify_handler(manager, notify);
+    //     if (err != ATLAS_ERR_OK) {
+    //         return err;
+    //     }
+    // }
 
-    kinematics_event_t event;
-    if (kinematics_manager_receive_kinematics_event(&event)) {
-        return kinematics_manager_event_handler(manager, &event);
+    // kinematics_event_t event;
+    // if (kinematics_manager_receive_kinematics_event(&event)) {
+    //     return kinematics_manager_event_handler(manager, &event);
+    // }
+
+    /* just for test */
+    static joints_event_t event = {.type = JOINTS_EVENT_TYPE_UPDATE};
+    kinematics_manager_get_joints_event_update_payload(&event.payload);
+    if (!kinematics_manager_send_joints_event(&event)) {
+        return ATLAS_ERR_FAIL;
     }
 
     return ATLAS_ERR_OK;

@@ -23,7 +23,6 @@
 #include "tim.h"
 #include "usart.h"
 
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
@@ -136,7 +135,7 @@ void Error_Handler(void)
     /* User can add his own implementation to report the HAL error return state */
     __disable_irq();
     while (1) {
-        puts("Error_Handler\n\r");
+        printf("Error_Handler\n\r");
     }
     /* USER CODE END Error_Handler_Debug */
 }

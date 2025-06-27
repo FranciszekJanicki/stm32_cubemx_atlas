@@ -167,6 +167,8 @@ static inline bool joint_manager_receive_joint_notify(joint_notify_t* notify)
 
 static atlas_err_t joint_manager_event_start_handler(joint_manager_t* manager)
 {
+    printf("joint_manager_event_start_handler\n\r");
+
     if (manager->is_running) {
         return ATLAS_ERR_ALREADY_RUNNING;
     }
@@ -178,6 +180,8 @@ static atlas_err_t joint_manager_event_start_handler(joint_manager_t* manager)
 
 static atlas_err_t joint_manager_event_stop_handler(joint_manager_t* manager)
 {
+    printf("joint_manager_event_stop_handler\n\r");
+
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
     }
@@ -190,6 +194,8 @@ static atlas_err_t joint_manager_event_stop_handler(joint_manager_t* manager)
 static atlas_err_t joint_manager_event_update_handler(joint_manager_t* manager,
                                                       joint_event_payload_t const* payload)
 {
+    printf("joint_manager_event_update_handler\n\r");
+
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
     }
@@ -202,6 +208,8 @@ static atlas_err_t joint_manager_event_update_handler(joint_manager_t* manager,
 
 static atlas_err_t joint_manager_notify_delta_timer_handler(joint_manager_t* manager)
 {
+    printf("joint_manager_notify_delta_timer_handler\n\r");
+
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
     }
@@ -213,6 +221,8 @@ static atlas_err_t joint_manager_notify_delta_timer_handler(joint_manager_t* man
 
 static atlas_err_t joint_manager_notify_pwm_pulse_handler(joint_manager_t* manager)
 {
+    printf("joint_manager_notify_pwm_pulse_handler\n\r");
+
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
     }
@@ -281,53 +291,53 @@ atlas_err_t joint_manager_initialize(joint_manager_t* manager, joint_config_t co
 
     manager->is_running = false;
 
-    HAL_TIM_Base_Start_IT(manager->delta_timer);
-    HAL_TIM_PWM_Start_IT(manager->pwm_timer, manager->pwm_channel);
+    // HAL_TIM_Base_Start_IT(manager->delta_timer);
+    // HAL_TIM_PWM_Start_IT(manager->pwm_timer, manager->pwm_channel);
 
-    a4988_initialize(&manager->a4988,
-                     &(a4988_config_t){.pin_dir = manager->dir_pin},
-                     &(a4988_interface_t){.gpio_user = manager,
-                                          .gpio_write_pin = a4988_gpio_write_pin,
-                                          .pwm_user = manager,
-                                          .pwm_start = a4988_pwm_start,
-                                          .pwm_stop = a4988_pwm_stop,
-                                          .pwm_set_freq = a4988_pwm_set_freq});
+    // a4988_initialize(&manager->a4988,
+    //                  &(a4988_config_t){.pin_dir = manager->dir_pin},
+    //                  &(a4988_interface_t){.gpio_user = manager,
+    //                                       .gpio_write_pin = a4988_gpio_write_pin,
+    //                                       .pwm_user = manager,
+    //                                       .pwm_start = a4988_pwm_start,
+    //                                       .pwm_stop = a4988_pwm_stop,
+    //                                       .pwm_set_freq = a4988_pwm_set_freq});
 
-    step_motor_initialize(
-        &manager->motor,
-        &(step_motor_config_t){.min_position = config->min_angle,
-                               .max_position = config->max_angle,
-                               .min_speed = config->min_speed,
-                               .max_speed = config->max_speed,
-                               .step_change = 1.8F},
-        &(step_motor_interface_t){.device_user = manager,
-                                  .device_set_frequency = step_motor_device_set_frequency,
-                                  .device_set_direction = step_motor_device_set_direction},
-        0.0F);
+    // step_motor_initialize(
+    //     &manager->motor,
+    //     &(step_motor_config_t){.min_position = config->min_angle,
+    //                            .max_position = config->max_angle,
+    //                            .min_speed = config->min_speed,
+    //                            .max_speed = config->max_speed,
+    //                            .step_change = 1.8F},
+    //     &(step_motor_interface_t){.device_user = manager,
+    //                               .device_set_frequency = step_motor_device_set_frequency,
+    //                               .device_set_direction = step_motor_device_set_direction},
+    //     0.0F);
 
-    pid_regulator_initialize(&manager->regulator,
-                             &(pid_regulator_config_t){.prop_gain = config->kp,
-                                                       .int_gain = config->ki,
-                                                       .dot_gain = config->kd,
-                                                       .sat_gain = config->kc,
-                                                       .min_control = config->min_speed,
-                                                       .max_control = config->max_speed});
+    // pid_regulator_initialize(&manager->regulator,
+    //                          &(pid_regulator_config_t){.prop_gain = config->kp,
+    //                                                    .int_gain = config->ki,
+    //                                                    .dot_gain = config->kd,
+    //                                                    .sat_gain = config->kc,
+    //                                                    .min_control = config->min_speed,
+    //                                                    .max_control = config->max_speed});
 
-    motor_driver_initialize(
-        &manager->driver,
-        &(motor_driver_config_t){.min_position = config->min_angle,
-                                 .max_position = config->max_angle,
-                                 .min_speed = config->min_speed,
-                                 .max_speed = config->max_speed,
-                                 .max_current = config->current_limit},
-        &(motor_driver_interface_t){.motor_user = manager,
-                                    .motor_set_speed = motor_driver_joint_set_speed,
-                                    .encoder_user = manager,
-                                    .encoder_get_position = motor_driver_encoder_get_position,
-                                    .regulator_user = manager,
-                                    .regulator_get_control = motor_driver_regulator_get_control,
-                                    .fault_user = manager,
-                                    .fault_get_current = motor_driver_fault_get_current});
+    // motor_driver_initialize(
+    //     &manager->driver,
+    //     &(motor_driver_config_t){.min_position = config->min_angle,
+    //                              .max_position = config->max_angle,
+    //                              .min_speed = config->min_speed,
+    //                              .max_speed = config->max_speed,
+    //                              .max_current = config->current_limit},
+    //     &(motor_driver_interface_t){.motor_user = manager,
+    //                                 .motor_set_speed = motor_driver_joint_set_speed,
+    //                                 .encoder_user = manager,
+    //                                 .encoder_get_position = motor_driver_encoder_get_position,
+    //                                 .regulator_user = manager,
+    //                                 .regulator_get_control = motor_driver_regulator_get_control,
+    //                                 .fault_user = manager,
+    //                                 .fault_get_current = motor_driver_fault_get_current});
 
     return ATLAS_ERR_OK;
 }

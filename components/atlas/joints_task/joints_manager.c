@@ -14,12 +14,12 @@
 
 static inline bool joints_manager_send_joint_event(QueueHandle_t queue, joint_event_t const* event)
 {
-    return xQueueSend(queue, event, pdMS_TO_TICKS(1)) == pdTRUE;
+    // return xQueueSend(queue, event, pdMS_TO_TICKS(1)) == pdTRUE;
 }
 
 static inline bool joints_manager_send_joint_notify(TaskHandle_t task, joint_notify_t notify)
 {
-    return xTaskNotify(task, notify, eSetBits) == pdTRUE;
+    // return xTaskNotify(task, notify, eSetBits) == pdTRUE;
 }
 
 static inline bool joints_manager_receive_joints_event(joints_event_t* event)
@@ -34,6 +34,8 @@ static inline bool joints_manager_receive_joints_notify(joints_notify_t* notify)
 
 static atlas_err_t joints_manager_event_start_handler(joints_manager_t* manager)
 {
+    printf("joints_manager_event_start_handler\n\r");
+
     if (manager->is_running) {
         return ATLAS_ERR_ALREADY_RUNNING;
     }
@@ -52,6 +54,8 @@ static atlas_err_t joints_manager_event_start_handler(joints_manager_t* manager)
 
 static atlas_err_t joints_manager_event_stop_handler(joints_manager_t* manager)
 {
+    printf("joints_manager_event_stop_handler\n\r");
+
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
     }
@@ -71,6 +75,8 @@ static atlas_err_t joints_manager_event_stop_handler(joints_manager_t* manager)
 static atlas_err_t joints_manager_event_update_handler(joints_manager_t* manager,
                                                        joints_event_payload_t const* payload)
 {
+    printf("joints_manager_event_update_handler\n\r");
+
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
     }
@@ -79,6 +85,11 @@ static atlas_err_t joints_manager_event_update_handler(joints_manager_t* manager
     for (joint_num_t num = 0; num < JOINT_NUM; ++num) {
         event.payload.update.position = payload->update[num].position;
         event.payload.update.delta_time = payload->update[num].delta_time;
+
+        printf("num: %d, position: %f, delta_time: %f\n\r",
+               num,
+               event.payload.update.position,
+               event.payload.update.delta_time);
 
         if (!joints_manager_send_joint_event(manager->joint_ctxs[num].queue, &event)) {
             return ATLAS_ERR_FAIL;
@@ -90,6 +101,8 @@ static atlas_err_t joints_manager_event_update_handler(joints_manager_t* manager
 
 static atlas_err_t joints_manager_notify_delta_timer_handler(joints_manager_t* manager)
 {
+    printf("joints_manager_notify_delta_timer_handler\n\r");
+
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
     }
@@ -174,27 +187,27 @@ atlas_err_t joints_manager_initialize(joints_manager_t* manager)
 
     manager->is_running = false;
 
-    for (joint_num_t num = 0; num < JOINT_NUM; ++num) {
-        joint_task_initialize(&joint_task_ctxs[num]);
-        joint_queue_initialize(&joint_task_ctxs[num]);
+    // for (joint_num_t num = 0; num < JOINT_NUM; ++num) {
+    //     joint_task_initialize(&joint_task_ctxs[num]);
+    //     joint_queue_initialize(&joint_task_ctxs[num]);
 
-        manager->joint_ctxs[num].task = joint_task_ctxs[num].task;
-        manager->joint_ctxs[num].queue = joint_task_ctxs[num].queue;
-    }
+    //     manager->joint_ctxs[num].task = joint_task_ctxs[num].task;
+    //     manager->joint_ctxs[num].queue = joint_task_ctxs[num].queue;
+    // }
 
     return ATLAS_ERR_OK;
 }
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
 {
-    BaseType_t task_woken = pdFALSE;
+    // BaseType_t task_woken = pdFALSE;
 
-    if (htim->Instance == TIM1) {
-        xTaskNotifyFromISR(joint_task_ctxs[JOINT_NUM_1].task,
-                           JOINT_NOTIFY_PWM_PULSE,
-                           eSetBits,
-                           &task_woken);
-    }
+    // if (htim->Instance == TIM1) {
+    //     xTaskNotifyFromISR(joint_task_ctxs[JOINT_NUM_1].task,
+    //                        JOINT_NOTIFY_PWM_PULSE,
+    //                        eSetBits,
+    //                        &task_woken);
+    // }
 
-    portYIELD_FROM_ISR(task_woken);
+    // portYIELD_FROM_ISR(task_woken);
 }

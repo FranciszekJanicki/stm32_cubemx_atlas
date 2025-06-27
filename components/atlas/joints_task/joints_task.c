@@ -11,10 +11,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define JOINTS_TASK_STACK_DEPTH (1024U / sizeof(StackType_t))
+#define JOINTS_TASK_STACK_DEPTH (4096U / sizeof(StackType_t))
 #define JOINTS_TASK_PRIORITY (1U)
 
-#define JOINTS_QUEUE_ITEMS (1U)
+#define JOINTS_QUEUE_ITEMS (10U)
 #define JOINTS_QUEUE_ITEM_SIZE (sizeof(joints_event_t))
 #define JOINTS_QUEUE_STORAGE_SIZE (JOINTS_QUEUE_ITEMS * JOINTS_QUEUE_ITEM_SIZE)
 

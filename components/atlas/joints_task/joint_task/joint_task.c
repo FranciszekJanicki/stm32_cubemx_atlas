@@ -10,8 +10,8 @@ static void joint_task_func(void* param)
 {
     joint_task_ctx_t* ctx = (joint_task_ctx_t*)param;
 
-    joint_manager_initialize(&ctx->manager, &ctx->config);
     ctx->manager.joint_queue = ctx->queue;
+    joint_manager_initialize(&ctx->manager, &ctx->config);
 
     while (1) {
         joint_manager_process(&ctx->manager);
