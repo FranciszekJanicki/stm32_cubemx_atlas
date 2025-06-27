@@ -15,7 +15,7 @@ static void joint_task_func(void* param)
     joint_manager_initialize(&ctx->manager, &ctx->config);
 
     while (1) {
-        //   joint_manager_process(&ctx->manager);
+        //  joint_manager_process(&ctx->manager);
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }

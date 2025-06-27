@@ -3,6 +3,8 @@
 
 #define DEBUG
 
+#define JOINTS_DELTA_TIMER_TIMEOUT_S (0.01F)
+
 typedef enum {
     JOINT_NUM_1,
     JOINT_NUM_2,

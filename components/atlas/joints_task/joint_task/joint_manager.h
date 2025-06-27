@@ -15,8 +15,6 @@
 
 typedef struct {
     float32_t position;
-    float32_t delta_time;
-    float32_t speed;
     bool is_running;
 
     a4988_t a4988;
@@ -42,8 +40,6 @@ typedef struct {
     float32_t max_angle;
     float32_t min_speed;
     float32_t max_speed;
-    float32_t step_change;
-    float32_t current_limit;
 } joint_config_t;
 
 atlas_err_t joint_manager_initialize(joint_manager_t* manager, joint_config_t const* config);

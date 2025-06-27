@@ -32,7 +32,8 @@ static inline bool joints_manager_receive_joints_notify(joints_notify_t* notify)
     return xTaskNotifyWait(0, JOINTS_NOTIFY_ALL, (uint32_t*)notify, pdMS_TO_TICKS(1)) == pdTRUE;
 }
 
-static atlas_err_t joints_manager_event_start_handler(joints_manager_t* manager)
+static atlas_err_t joints_manager_event_start_handler(joints_manager_t* manager,
+                                                      joints_event_payload_t const* payload)
 {
     printf("joints_manager_event_start_handler\n\r");
 
@@ -42,6 +43,8 @@ static atlas_err_t joints_manager_event_start_handler(joints_manager_t* manager)
 
     static joint_event_t event = {.type = JOINT_EVENT_TYPE_START};
     for (joint_num_t num = 0; num < JOINT_NUM; ++num) {
+        event.payload.start.position = payload->start.positions[num];
+
         if (!joints_manager_send_joint_event(manager->joint_ctxs[num].queue, &event)) {
             return ATLAS_ERR_FAIL;
         }
@@ -83,13 +86,9 @@ static atlas_err_t joints_manager_event_update_handler(joints_manager_t* manager
 
     static joint_event_t event = {.type = JOINT_EVENT_TYPE_UPDATE};
     for (joint_num_t num = 0; num < JOINT_NUM; ++num) {
-        event.payload.update.position = payload->update[num].position;
-        event.payload.update.delta_time = payload->update[num].delta_time;
+        event.payload.update.position = payload->update.positions[num];
 
-        printf("num: %d, position: %f, delta_time: %f\n\r",
-               num,
-               event.payload.update.position,
-               event.payload.update.delta_time);
+        printf("num: %d, position: %f\n\r", num, event.payload.update.position);
 
         if (!joints_manager_send_joint_event(manager->joint_ctxs[num].queue, &event)) {
             return ATLAS_ERR_FAIL;
@@ -131,7 +130,7 @@ static atlas_err_t joints_manager_event_handler(joints_manager_t* manager,
 {
     switch (event->type) {
         case JOINTS_EVENT_TYPE_START: {
-            return joints_manager_event_start_handler(manager);
+            return joints_manager_event_start_handler(manager, &event->payload);
         }
         case JOINTS_EVENT_TYPE_STOP: {
             return joints_manager_event_stop_handler(manager);
@@ -177,9 +176,7 @@ static joint_task_ctx_t joint_task_ctxs[JOINT_NUM] = {
                                 .min_angle = 0.0F,
                                 .max_angle = 359.0F,
                                 .min_speed = 10.0F,
-                                .max_speed = 500.0F,
-                                .current_limit = 2.0F,
-                                .step_change = 1.8F}}};
+                                .max_speed = 500.0F}}};
 
 atlas_err_t joints_manager_initialize(joints_manager_t* manager)
 {

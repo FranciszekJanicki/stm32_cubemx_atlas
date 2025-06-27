@@ -34,23 +34,12 @@ static inline bool kinematics_manager_receive_kinematics_notify(kinematics_notif
 static inline void kinematics_manager_get_joints_event_update_payload(
     joints_event_payload_t* payload)
 {
-    payload->update[JOINT_NUM_1].position = 0.0F;
-    payload->update[JOINT_NUM_1].delta_time = 0.01F;
-
-    payload->update[JOINT_NUM_2].position = 0.0F;
-    payload->update[JOINT_NUM_2].delta_time = 0.01F;
-
-    payload->update[JOINT_NUM_3].position = 0.0F;
-    payload->update[JOINT_NUM_3].delta_time = 0.01F;
-
-    payload->update[JOINT_NUM_4].position = 0.0F;
-    payload->update[JOINT_NUM_4].delta_time = 0.01F;
-
-    payload->update[JOINT_NUM_5].position = 0.0F;
-    payload->update[JOINT_NUM_5].delta_time = 0.01F;
-
-    payload->update[JOINT_NUM_6].position = 0.0F;
-    payload->update[JOINT_NUM_6].delta_time = 0.01F;
+    payload->update.positions[JOINT_NUM_1] = 0.0F;
+    payload->update.positions[JOINT_NUM_2] = 0.0F;
+    payload->update.positions[JOINT_NUM_3] = 0.0F;
+    payload->update.positions[JOINT_NUM_4] = 0.0F;
+    payload->update.positions[JOINT_NUM_5] = 0.0F;
+    payload->update.positions[JOINT_NUM_6] = 0.0F;
 }
 
 static atlas_err_t kinematics_manager_event_start_handler(kinematics_manager_t* manager)
