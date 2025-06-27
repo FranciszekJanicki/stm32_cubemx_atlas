@@ -215,6 +215,8 @@ static joint_err_t joint_manager_notify_pwm_pulse_handler(joint_manager_t* manag
 
 joint_err_t joint_manager_notify_handler(joint_manager_t* manager, joint_notify_t notify)
 {
+    assert(manager);
+
     if (notify & JOINT_NOTIFY_DELTA_TIMER) {
         joint_err_t err = joint_manager_notify_delta_timer_handler(manager);
         if (err != JOINT_ERR_OK) {
@@ -231,6 +233,8 @@ joint_err_t joint_manager_notify_handler(joint_manager_t* manager, joint_notify_
 
 joint_err_t joint_manager_event_handler(joint_manager_t* manager, joint_event_t const* event)
 {
+    assert(manager && event);
+
     switch (event->type) {
         case JOINT_EVENT_TYPE_START: {
             return joint_manager_event_start_handler(manager);
@@ -246,12 +250,14 @@ joint_err_t joint_manager_event_handler(joint_manager_t* manager, joint_event_t 
     return JOINT_ERR_UNKNOWN_EVENT;
 }
 
-joint_err_t joint_manager_initialize(joint_manager_t* manager)
+joint_err_t joint_manager_initialize(joint_manager_t* manager, joint_manager_config_t const* config)
 {
+    assert(manager && config);
+
     manager->is_running = false;
 
-    // HAL_TIM_Base_Start_IT(manager->delta_timer);
-    // HAL_TIM_PWM_Start_IT(manager->pwm_timer, manager->pwm_channel);
+    HAL_TIM_Base_Start_IT(manager->delta_timer);
+    HAL_TIM_PWM_Start_IT(manager->pwm_timer, manager->pwm_channel);
 
     a4988_initialize(&manager->a4988,
                      &(a4988_config_t){.pin_dir = manager->dir_pin},
@@ -264,10 +270,10 @@ joint_err_t joint_manager_initialize(joint_manager_t* manager)
 
     step_motor_initialize(
         &manager->motor,
-        &(step_motor_config_t){.min_position = 0.0F,
-                               .max_position = 360.0F,
-                               .min_speed = 10.0F,
-                               .max_speed = 500.0F,
+        &(step_motor_config_t){.min_position = config->min_angle,
+                               .max_position = config->max_angle,
+                               .min_speed = config->min_speed,
+                               .max_speed = config->max_speed,
                                .step_change = 1.8F},
         &(step_motor_interface_t){.device_user = manager,
                                   .device_set_frequency = step_motor_device_set_frequency,
@@ -275,20 +281,20 @@ joint_err_t joint_manager_initialize(joint_manager_t* manager)
         0.0F);
 
     pid_regulator_initialize(&manager->regulator,
-                             &(pid_regulator_config_t){.prop_gain = 10.0F,
-                                                       .int_gain = 0.0F,
-                                                       .dot_gain = 0.0F,
-                                                       .min_control = 10.0F,
-                                                       .max_control = 500.0F,
-                                                       .sat_gain = 0.0F});
+                             &(pid_regulator_config_t){.prop_gain = config->kp,
+                                                       .int_gain = config->ki,
+                                                       .dot_gain = config->kd,
+                                                       .sat_gain = config->kc,
+                                                       .min_control = config->min_speed,
+                                                       .max_control = config->max_speed});
 
     motor_driver_initialize(
         &manager->driver,
-        &(motor_driver_config_t){.min_position = 0.0F,
-                                 .max_position = 360.0F,
-                                 .min_speed = 10.0F,
-                                 .max_speed = 500.0F,
-                                 .max_current = 2.0F},
+        &(motor_driver_config_t){.min_position = config->min_angle,
+                                 .max_position = config->max_angle,
+                                 .min_speed = config->min_speed,
+                                 .max_speed = config->max_speed,
+                                 .max_current = config->current_limit},
         &(motor_driver_interface_t){.motor_user = manager,
                                     .motor_set_speed = motor_driver_joint_set_speed,
                                     .encoder_user = manager,

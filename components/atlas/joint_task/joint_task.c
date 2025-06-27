@@ -22,9 +22,27 @@ static joint_manager_t joint_managers[JOINT_NUM] = {
     [JOINT_NUM_6] = {},
 };
 
+static joint_manager_config_t joint_manager_configs[JOINT_NUM] = {
+    [JOINT_NUM_1] = {.kp = 10.0F,
+                     .ki = 0.0F,
+                     .kd = 0.0F,
+                     .kc = 0.0F,
+                     .min_angle = 0.0F,
+                     .max_angle = 359.0F,
+                     .min_speed = 10.0F,
+                     .max_speed = 500.0F,
+                     .current_limit = 2.0F,
+                     .step_change = 1.8F},
+    [JOINT_NUM_2] = {},
+    [JOINT_NUM_3] = {},
+    [JOINT_NUM_4] = {},
+    [JOINT_NUM_5] = {},
+    [JOINT_NUM_6] = {},
+};
+
 static TaskHandle_t joint_tasks[JOINT_NUM];
 static StaticTask_t joint_task_buffers[JOINT_NUM];
-static StackType_t joint_task_stacks[JOINT_NUM][4096 / sizeof(StackType_t)];
+static StackType_t joint_task_stacks[JOINT_NUM][1024U / sizeof(StackType_t)];
 
 static QueueHandle_t joint_queues[JOINT_NUM];
 static StaticQueue_t joint_queue_buffers[JOINT_NUM];
@@ -34,7 +52,7 @@ static void joint_task_func(void* param)
 {
     joint_num_t num = (joint_num_t)param;
 
-    joint_manager_initialize(&joint_managers[num]);
+    joint_manager_initialize(&joint_managers[num], &joint_manager_configs[num]);
 
     uint32_t notify;
     joint_event_t event;

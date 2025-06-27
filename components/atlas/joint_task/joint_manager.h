@@ -12,6 +12,19 @@
 #include <stm32l4xx_hal.h>
 
 typedef struct {
+    float32_t kp;
+    float32_t ki;
+    float32_t kd;
+    float32_t kc;
+    float32_t min_angle;
+    float32_t max_angle;
+    float32_t min_speed;
+    float32_t max_speed;
+    float32_t step_change;
+    float32_t current_limit;
+} joint_manager_config_t;
+
+typedef struct {
     float32_t position;
     float32_t delta_time;
     float32_t speed;
@@ -62,7 +75,8 @@ typedef enum {
     JOINT_ERR_UNKNOWN_NOTIFY,
 } joint_err_t;
 
-joint_err_t joint_manager_initialize(joint_manager_t* manager);
+joint_err_t joint_manager_initialize(joint_manager_t* manager,
+                                     joint_manager_config_t const* config);
 joint_err_t joint_manager_notify_handler(joint_manager_t* manager, joint_notify_t notify);
 joint_err_t joint_manager_event_handler(joint_manager_t* manager, joint_event_t const* event);
 
