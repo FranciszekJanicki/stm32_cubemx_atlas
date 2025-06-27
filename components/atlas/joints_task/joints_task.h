@@ -1,14 +1,10 @@
-#ifndef JOINT_TASK_JOINTS_TASK_H
-#define JOINT_TASK_JOINTS_TASK_H
+#ifndef JOINTS_TASK_JOINTS_TASK_H
+#define JOINTS_TASK_JOINTS_TASK_H
 
 #include "config.h"
-#include "joint_manager.h"
+#include "joints_manager.h"
 
-typedef struct {
-    float32_t joint_angles[JOINT_NUM];
-} joints_event_t;
+void joints_task_initialize(void);
+void joints_queue_initialize(void);
 
-joint_err_t joints_task_initialize(void);
-joint_err_t joints_queue_initialize(void);
-
-#endif // JOINT_TASK_JOINTS_TASK_H
+#endif // JOINTS_TASK_JOINTS_TASK_H

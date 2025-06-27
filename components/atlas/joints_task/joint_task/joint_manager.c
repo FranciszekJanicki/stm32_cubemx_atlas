@@ -1,14 +1,11 @@
 #include "joint_manager.h"
 #include "FreeRTOS.h"
 #include "a4988.h"
-#include "gpio.h"
 #include "motor_driver.h"
 #include "pid_regulator.h"
 #include "step_motor.h"
 #include "stm32l4xx_hal.h"
 #include "task.h"
-#include "tim.h"
-#include "usart.h"
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -213,10 +210,8 @@ static joint_err_t joint_manager_notify_pwm_pulse_handler(joint_manager_t* manag
     return JOINT_ERR_OK;
 }
 
-joint_err_t joint_manager_notify_handler(joint_manager_t* manager, joint_notify_t notify)
+static joint_err_t joint_manager_notify_handler(joint_manager_t* manager, joint_notify_t notify)
 {
-    assert(manager);
-
     if (notify & JOINT_NOTIFY_DELTA_TIMER) {
         joint_err_t err = joint_manager_notify_delta_timer_handler(manager);
         if (err != JOINT_ERR_OK) {
@@ -231,10 +226,8 @@ joint_err_t joint_manager_notify_handler(joint_manager_t* manager, joint_notify_
     return JOINT_ERR_UNKNOWN_NOTIFY;
 }
 
-joint_err_t joint_manager_event_handler(joint_manager_t* manager, joint_event_t const* event)
+static joint_err_t joint_manager_event_handler(joint_manager_t* manager, joint_event_t const* event)
 {
-    assert(manager && event);
-
     switch (event->type) {
         case JOINT_EVENT_TYPE_START: {
             return joint_manager_event_start_handler(manager);
@@ -250,7 +243,32 @@ joint_err_t joint_manager_event_handler(joint_manager_t* manager, joint_event_t 
     return JOINT_ERR_UNKNOWN_EVENT;
 }
 
-joint_err_t joint_manager_initialize(joint_manager_t* manager, joint_manager_config_t const* config)
+joint_err_t joint_manager_process(joint_manager_t* manager)
+{
+    assert(manager);
+
+    joint_err_t err;
+
+    uint32_t notify;
+    if (xTaskNotifyWait(0, JOINT_NOTIFY_ALL, &notify, pdMS_TO_TICKS(1))) {
+        err = joint_manager_notify_handler(manager, notify);
+        if (err != JOINT_ERR_OK) {
+            return err;
+        }
+    }
+
+    joint_event_t event;
+    if (xQueuePeek(manager->joint_queue, &event, pdMS_TO_TICKS(1))) {
+        err = joint_manager_event_handler(manager, &event);
+        if (err != JOINT_ERR_OK) {
+            return err;
+        }
+    }
+
+    return err;
+}
+
+joint_err_t joint_manager_initialize(joint_manager_t* manager, joint_config_t const* config)
 {
     assert(manager && config);
 

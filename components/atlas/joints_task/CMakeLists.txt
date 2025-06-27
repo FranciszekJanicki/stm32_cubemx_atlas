@@ -4,6 +4,7 @@ add_library(joints_task STATIC)
 
 target_sources(joints_task PRIVATE 
     joints_task.c
+    joints_manager.c
 )
 
 target_include_directories(joints_task PUBLIC

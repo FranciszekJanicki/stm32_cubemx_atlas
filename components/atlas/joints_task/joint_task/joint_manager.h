@@ -1,5 +1,5 @@
-#ifndef ATLAS_JOINT_TASK_JOINT_MANAGER_H
-#define ATLAS_JOINT_TASK_JOINT_MANAGER_H
+#ifndef JOINT_TASK_JOINT_MANAGER_H
+#define JOINT_TASK_JOINT_MANAGER_H
 
 #include "FreeRTOS.h"
 #include "a4988.h"
@@ -22,7 +22,7 @@ typedef struct {
     float32_t max_speed;
     float32_t step_change;
     float32_t current_limit;
-} joint_manager_config_t;
+} joint_config_t;
 
 typedef struct {
     float32_t position;
@@ -40,6 +40,8 @@ typedef struct {
     TIM_HandleTypeDef* delta_timer;
     TIM_HandleTypeDef* pwm_timer;
     uint32_t pwm_channel;
+
+    QueueHandle_t joint_queue;
 } joint_manager_t;
 
 typedef enum {
@@ -75,9 +77,7 @@ typedef enum {
     JOINT_ERR_UNKNOWN_NOTIFY,
 } joint_err_t;
 
-joint_err_t joint_manager_initialize(joint_manager_t* manager,
-                                     joint_manager_config_t const* config);
-joint_err_t joint_manager_notify_handler(joint_manager_t* manager, joint_notify_t notify);
-joint_err_t joint_manager_event_handler(joint_manager_t* manager, joint_event_t const* event);
+joint_err_t joint_manager_initialize(joint_manager_t* manager, joint_config_t const* config);
+joint_err_t joint_manager_process(joint_manager_t* manager);
 
-#endif // ATLAS_JOINT_TASK_JOINT_MANAGER_H
+#endif // JOINT_TASK_JOINT_MANAGER_H
