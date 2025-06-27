@@ -3,7 +3,7 @@
 
 #include "atlas_err.h"
 
-atlas_err_t kinematics_task_initialize(void);
-atlas_err_t kinematics_queue_initialize(void);
+void kinematics_task_initialize(void);
+void kinematics_queue_initialize(void);
 
 #endif // ATLAS_KINEMATICS_TASK_KINEMATICS_TASK_H

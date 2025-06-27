@@ -8,6 +8,7 @@
 typedef enum {
     TASK_TYPE_JOINTS,
     TASK_TYPE_KINEMATICS,
+    TASK_TYPE_UART,
     TASK_TYPE_TASK_NUM,
 } TaskType_t;
 

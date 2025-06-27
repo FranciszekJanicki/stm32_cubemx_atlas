@@ -1,19 +1,18 @@
-add_library(common STATIC)
+add_library(stream_buffer_manager STATIC)
 
-target_sources(common PRIVATE
-    write.c
+target_sources(stream_buffer_manager PRIVATE 
+    stream_buffer_manager.c
 )
 
-target_include_directories(common PUBLIC
+target_include_directories(stream_buffer_manager PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(common PUBLIC
-    stream_buffer_manager
+target_link_libraries(stream_buffer_manager PUBLIC
     stm32cubemx
 )
 
-target_compile_options(common PUBLIC
+target_compile_options(stream_buffer_manager PUBLIC
     -std=c23
     -Wall
     -Wextra

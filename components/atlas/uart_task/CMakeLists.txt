@@ -1,7 +1,7 @@
 add_library(uart_task STATIC)
 
 target_sources(uart_task PRIVATE 
-
+    uart_task.c
 )
 
 target_include_directories(uart_task PUBLIC
@@ -12,7 +12,7 @@ target_link_libraries(uart_task PUBLIC
     common
     stm32cubemx
     task_manager
-    queue_manager
+    stream_buffer_manager
 )
 
 target_compile_options(uart_task PUBLIC

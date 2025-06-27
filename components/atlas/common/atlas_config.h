@@ -1,6 +1,8 @@
 #ifndef ATLAS_COMMON_ATLAS_CONFIG_H
 #define ATLAS_COMMON_ATLAS_CONFIG_H
 
+#define DEBUG
+
 typedef enum {
     JOINT_NUM_1,
     JOINT_NUM_2,

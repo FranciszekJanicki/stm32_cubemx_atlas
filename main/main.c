@@ -7,6 +7,7 @@
 #include "task.h"
 #include "task_manager.h"
 #include "tim.h"
+#include "uart_task.h"
 #include "usart.h"
 #include <stdio.h>
 
@@ -22,11 +23,11 @@ int main(void)
 
     HAL_Delay(500);
 
-    kinematics_queue_initialize();
-    joints_queue_initialize();
+    uart_stream_buffer_initialize();
+    uart_task_initialize();
 
+    kinematics_queue_initialize();
     kinematics_task_initialize();
-    joints_task_initialize();
 
     vTaskStartScheduler();
 }
@@ -35,13 +36,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
     BaseType_t task_woken = pdFALSE;
 
-    if (htim->Instance == TIM2) {
+    if (htim->Instance == TIM4) {
+        HAL_IncTick();
+    } else if (htim->Instance == TIM2) {
         xTaskNotifyFromISR(task_manager_get(TASK_TYPE_JOINTS),
                            JOINTS_NOTIFY_DELTA_TIMER,
                            eSetBits,
                            &task_woken);
-    } else if (htim->Instance == TIM3) {
-        HAL_IncTick();
     }
 
     portYIELD_FROM_ISR(task_woken);
