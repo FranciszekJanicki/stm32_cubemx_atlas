@@ -18,112 +18,10 @@
 #define JOINTS_QUEUE_ITEM_SIZE (sizeof(joints_event_t))
 #define JOINTS_QUEUE_STORAGE_SIZE (JOINTS_QUEUE_ITEMS * JOINTS_QUEUE_ITEM_SIZE)
 
-static joints_config_t joints_config = {
-    .joints_ctxs = {
-
-        [JOINT_NUM_1] = {.manager = {.delta_timer = &htim2,
-                                     .pwm_timer = &htim1,
-                                     .pwm_channel = TIM_CHANNEL_4,
-                                     .dir_pin = GPIO_PIN_10,
-                                     .dir_port = GPIOA},
-                         .config = {.kp = 10.0F,
-                                    .ki = 0.0F,
-                                    .kd = 0.0F,
-                                    .kc = 0.0F,
-                                    .min_angle = 0.0F,
-                                    .max_angle = 359.0F,
-                                    .min_speed = 10.0F,
-                                    .max_speed = 500.0F,
-                                    .current_limit = 2.0F,
-                                    .step_change = 1.8F}},
-
-        [JOINT_NUM_2] = {.manager = {.delta_timer = NULL,
-                                     .pwm_timer = NULL,
-                                     .pwm_channel = 0x0000U,
-                                     .dir_pin = 0x0000U,
-                                     .dir_port = NULL},
-                         .config = {.kp = 0.0F,
-                                    .ki = 0.0F,
-                                    .kd = 0.0F,
-                                    .kc = 0.0F,
-                                    .min_angle = 0.0F,
-                                    .max_angle = 0.0F,
-                                    .min_speed = 0.0F,
-                                    .max_speed = 0.0F,
-                                    .current_limit = 0.0F,
-                                    .step_change = 0.0F}},
-
-        [JOINT_NUM_3] = {.manager = {.delta_timer = NULL,
-                                     .pwm_timer = NULL,
-                                     .pwm_channel = 0x0000U,
-                                     .dir_pin = 0x0000U,
-                                     .dir_port = NULL},
-                         .config = {.kp = 0.0F,
-                                    .ki = 0.0F,
-                                    .kd = 0.0F,
-                                    .kc = 0.0F,
-                                    .min_angle = 0.0F,
-                                    .max_angle = 0.0F,
-                                    .min_speed = 10.0F,
-                                    .max_speed = 0.0F,
-                                    .current_limit = 0.0F,
-                                    .step_change = 0.0F}},
-
-        [JOINT_NUM_4] = {.manager = {.delta_timer = NULL,
-                                     .pwm_timer = NULL,
-                                     .pwm_channel = 0x0000U,
-                                     .dir_pin = 0x0000U,
-                                     .dir_port = NULL},
-                         .config = {.kp = 0.0F,
-                                    .ki = 0.0F,
-                                    .kd = 0.0F,
-                                    .kc = 0.0F,
-                                    .min_angle = 0.0F,
-                                    .max_angle = 0.0F,
-                                    .min_speed = 0.0F,
-                                    .max_speed = 0.0F,
-                                    .current_limit = 0.0F,
-                                    .step_change = 0.0F}},
-
-        [JOINT_NUM_5] = {.manager = {.delta_timer = NULL,
-                                     .pwm_timer = NULL,
-                                     .pwm_channel = 0x0000U,
-                                     .dir_pin = 0x0000U,
-                                     .dir_port = NULL},
-                         .config = {.kp = 0.0F,
-                                    .ki = 0.0F,
-                                    .kd = 0.0F,
-                                    .kc = 0.0F,
-                                    .min_angle = 0.0F,
-                                    .max_angle = 0.0F,
-                                    .min_speed = 0.0F,
-                                    .max_speed = 0.0F,
-                                    .current_limit = 0.0F,
-                                    .step_change = 0.0F}},
-
-        [JOINT_NUM_6] = {.manager = {.delta_timer = NULL,
-                                     .pwm_timer = NULL,
-                                     .pwm_channel = 0x0000U,
-                                     .dir_pin = 0x0000U,
-                                     .dir_port = NULL},
-                         .config = {.kp = 0.0F,
-                                    .ki = 0.0F,
-                                    .kd = 0.0F,
-                                    .kc = 0.0F,
-                                    .min_angle = 0.0F,
-                                    .max_angle = 0.0F,
-                                    .min_speed = 0.0F,
-                                    .max_speed = 0.0F,
-                                    .current_limit = 0.0F,
-                                    .step_change = 0.0F}}
-
-    }};
-
-static joints_manager_t joints_manager = {};
-
 static void joints_task_func(void*)
 {
-    joints_manager_initialize(&joints_manager, &joints_config);
+    joints_manager_t joints_manager;
+    joints_manager_initialize(&joints_manager);
 
     while (1) {
         joints_manager_process(&joints_manager);
@@ -160,16 +58,9 @@ void joints_queue_initialize(void)
     queue_manager_set(QUEUE_TYPE_JOINTS, joints_queue);
 }
 
-void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
-{
-    BaseType_t task_woken = pdFALSE;
+#undef JOINTS_TASK_STACK_DEPTH
+#undef JOINTS_TASK_PRIORITY
 
-    if (htim->Instance == TIM1) {
-        xTaskNotifyFromISR(joints_config.joints_ctxs[JOINT_NUM_1].task,
-                           JOINT_NOTIFY_PWM_PULSE,
-                           eSetBits,
-                           &task_woken);
-    }
-
-    portYIELD_FROM_ISR(task_woken);
-}
+#undef JOINTS_QUEUE_ITEMS
+#undef JOINTS_QUEUE_ITEM_SIZE
+#undef JOINTS_QUEUE_STORAGE_SIZE

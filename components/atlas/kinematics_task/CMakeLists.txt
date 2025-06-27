@@ -2,6 +2,7 @@ add_library(kinematics_task STATIC)
 
 target_sources(kinematics_task PRIVATE 
     kinematics_task.c
+    kinematics_manager.c
 )
 
 target_include_directories(kinematics_task PUBLIC
@@ -10,6 +11,8 @@ target_include_directories(kinematics_task PUBLIC
 
 target_link_libraries(kinematics_task PUBLIC
     common
+    stm32cubemx
+    joints_task
 )
 
 target_compile_options(kinematics_task PUBLIC
