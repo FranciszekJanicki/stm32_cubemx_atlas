@@ -12,11 +12,7 @@ static void joint_task_func(void* param)
     joint_task_ctx_t* ctx = (joint_task_ctx_t*)param;
 
     joint_manager_initialize(&ctx->manager, &ctx->config);
-
     ctx->manager.joint_queue = ctx->queue;
-
-    uint32_t notify;
-    joint_event_t event;
 
     while (1) {
         joint_manager_process(&ctx->manager);

@@ -141,9 +141,9 @@ joints_err_t joints_manager_initialize(joints_manager_t* manager, joints_config_
 
     for (joint_num_t num = 0; num < JOINT_NUM; ++num) {
         joint_task_initialize(&config->joints_ctxs[num]);
-        joint_queue_initialize(&config->joints_ctxs[num]);
-
         manager->joints[num].task = config->joints_ctxs[num].task;
+
+        joint_queue_initialize(&config->joints_ctxs[num]);
         manager->joints[num].queue = config->joints_ctxs[num].queue;
     }
 
