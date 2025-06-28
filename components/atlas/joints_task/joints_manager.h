@@ -18,6 +18,7 @@ typedef struct {
         TaskHandle_t task;
         QueueHandle_t queue;
         bool is_ready;
+        float position;
     } joint_ctxs[JOINT_NUM];
 } joints_manager_t;
 

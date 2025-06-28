@@ -108,12 +108,17 @@ static atlas_err_t joints_manager_event_update_handler(joints_manager_t* manager
 
     joint_event_t event = {.type = JOINT_EVENT_TYPE_UPDATE};
     for (uint8_t num = 0; num < JOINT_NUM; ++num) {
-        event.payload.update.joint_position = payload->joint_space.joint_position[num];
-        event.payload.update.delta_time = JOINTS_DELTA_TIMER_TIMEOUT_S;
-        LOG(TAG, "joint position %u: %f", num, event.payload.update.joint_position);
+        if (manager->joint_ctxs[num].position != payload->joint_space.joint_position[num]) {
+            event.payload.update.joint_position = payload->joint_space.joint_position[num];
+            event.payload.update.delta_time = JOINTS_DELTA_TIMER_TIMEOUT_S;
 
-        if (!joints_manager_send_joint_event(manager->joint_ctxs[num].queue, &event)) {
-            return ATLAS_ERR_FAIL;
+            LOG(TAG, "joint position %u: %f", num, event.payload.update.joint_position);
+
+            if (!joints_manager_send_joint_event(manager->joint_ctxs[num].queue, &event)) {
+                return ATLAS_ERR_FAIL;
+            }
+
+            manager->joint_ctxs[num].position = payload->joint_space.joint_position[num];
         }
     }
 

@@ -4,30 +4,37 @@
 #include "stream_buffer_manager.h"
 #include "task.h"
 #include "usart.h"
+#include <string.h>
 
 int _write(int file, char* ptr, int len)
 {
-#ifdef DEBUG
     if (!xPortIsInsideInterrupt()) {
         xStreamBufferSend(stream_buffer_manager_get(STREAM_BUFFER_TYPE_UART),
                           ptr,
                           len,
                           pdMS_TO_TICKS(1));
+        return len;
     }
-#endif
-    return len;
+
+    return 0;
 }
 
-void vApplicationStackOverflowHook(TaskHandle_t xTask, char* pcTaskName)
+void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char* pcTaskName)
 {
-    printf("Stack overflow in task: %s\n", pcTaskName);
-    while (1)
-        ;
+    taskDISABLE_INTERRUPTS();
+    for (;;)
+        HAL_UART_Transmit(&huart2,
+                          (uint8_t*)"vApplicationStackOverflowHook\n\r",
+                          strlen("vApplicationStackOverflowHook\n\r"),
+                          100);
 }
 
 void vApplicationMallocFailedHook(void)
 {
-    printf("Malloc failed!\n");
-    while (1)
-        ;
+    taskDISABLE_INTERRUPTS();
+    for (;;)
+        HAL_UART_Transmit(&huart2,
+                          (uint8_t*)"vApplicationMallocFailedHook\n\r",
+                          strlen("vApplicationMallocFailedHook\n\r"),
+                          100);
 }

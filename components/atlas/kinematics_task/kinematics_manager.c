@@ -44,12 +44,12 @@ static inline cartesian_space_t kinematics_manager_joint_space_to_cartesian_spac
 static inline joint_space_t kinematics_manager_cartesian_space_to_joint_space(
     cartesian_space_t const* cartesian_space)
 {
-    return (joint_space_t){.joint_position = {[JOINT_NUM_1] = 0.0F,
-                                              [JOINT_NUM_2] = 0.0F,
-                                              [JOINT_NUM_3] = 0.0F,
-                                              [JOINT_NUM_4] = 0.0F,
-                                              [JOINT_NUM_5] = 0.0F,
-                                              [JOINT_NUM_6] = 0.0F}};
+    return (joint_space_t){.joint_position = {[JOINT_NUM_1] = 10.0F,
+                                              [JOINT_NUM_2] = 10.0F,
+                                              [JOINT_NUM_3] = 10.0F,
+                                              [JOINT_NUM_4] = 10.0F,
+                                              [JOINT_NUM_5] = 10.0F,
+                                              [JOINT_NUM_6] = 10.0F}};
 }
 
 static atlas_err_t kinematics_manager_event_start_handler(
@@ -207,6 +207,10 @@ atlas_err_t kinematics_manager_process(kinematics_manager_t* manager)
     if (kinematics_manager_receive_kinematics_event(&event)) {
         RET_ON_ERR(kinematics_manager_event_handler(manager, &event));
     }
+
+    // test purposes only
+    vTaskDelay(100);
+    kinematics_manager_event_inverse_handler(manager, NULL);
 
     return ATLAS_ERR_OK;
 }

@@ -16,7 +16,7 @@
 static char const* const TAG = "joints_task";
 
 #define JOINTS_TASK_STACK_DEPTH (4096U / sizeof(StackType_t))
-#define JOINTS_TASK_PRIORITY (1U)
+#define JOINTS_TASK_PRIORITY (2U)
 
 #define JOINTS_QUEUE_ITEMS (10U)
 #define JOINTS_QUEUE_ITEM_SIZE (sizeof(joints_event_t))

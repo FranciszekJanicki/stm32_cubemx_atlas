@@ -10,6 +10,7 @@
 #include "uart_task.h"
 #include "usart.h"
 #include <stdio.h>
+#include <string.h>
 
 int main(void)
 {

@@ -125,18 +125,6 @@ void SystemClock_Config(void)
  * @param  htim : TIM handle
  * @retval None
  */
-// void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-// {
-//   /* USER CODE BEGIN Callback 0 */
-
-//   /* USER CODE END Callback 0 */
-//   if (htim->Instance == TIM4) {
-//     HAL_IncTick();
-//   }
-//   /* USER CODE BEGIN Callback 1 */
-
-//   /* USER CODE END Callback 1 */
-// }
 
 /**
  * @brief  This function is executed in case of error occurrence.
@@ -148,7 +136,6 @@ void Error_Handler(void)
     /* User can add his own implementation to report the HAL error return state */
     __disable_irq();
     while (1) {
-        printf("Error_Handler\n\r");
     }
     /* USER CODE END Error_Handler_Debug */
 }

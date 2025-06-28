@@ -53,8 +53,9 @@ static bool frequency_to_prescaler_and_period(uint32_t frequency,
 
 static a4988_err_t a4988_gpio_write_pin(void* user, uint32_t pin, bool state)
 {
-    joint_manager_t* manager = (joint_manager_t*)user;
+    assert(user);
 
+    joint_manager_t* manager = (joint_manager_t*)user;
     HAL_GPIO_WritePin(manager->dir_port, pin, (GPIO_PinState)state);
 
     return A4988_ERR_OK;
@@ -62,8 +63,9 @@ static a4988_err_t a4988_gpio_write_pin(void* user, uint32_t pin, bool state)
 
 static a4988_err_t a4988_pwm_stop(void* user)
 {
-    joint_manager_t* manager = (joint_manager_t*)user;
+    assert(user);
 
+    joint_manager_t* manager = (joint_manager_t*)user;
     HAL_TIM_PWM_Stop_IT(manager->pwm_timer, manager->pwm_channel);
 
     return A4988_ERR_OK;
@@ -71,8 +73,9 @@ static a4988_err_t a4988_pwm_stop(void* user)
 
 static a4988_err_t a4988_pwm_start(void* user)
 {
-    joint_manager_t* manager = (joint_manager_t*)user;
+    assert(user);
 
+    joint_manager_t* manager = (joint_manager_t*)user;
     HAL_TIM_PWM_Start_IT(manager->pwm_timer, manager->pwm_channel);
 
     return A4988_ERR_OK;
@@ -80,6 +83,8 @@ static a4988_err_t a4988_pwm_start(void* user)
 
 static a4988_err_t a4988_pwm_set_freq(void* user, uint32_t freq)
 {
+    assert(user);
+
     joint_manager_t* manager = (joint_manager_t*)user;
 
     uint32_t prescaler;
@@ -103,8 +108,9 @@ static a4988_err_t a4988_pwm_set_freq(void* user, uint32_t freq)
 
 static step_motor_err_t step_motor_device_set_frequency(void* user, uint32_t frequency)
 {
-    joint_manager_t* manager = (joint_manager_t*)user;
+    assert(user);
 
+    joint_manager_t* manager = (joint_manager_t*)user;
     a4988_set_frequency(&manager->a4988, frequency);
 
     return STEP_MOTOR_ERR_OK;
@@ -113,8 +119,9 @@ static step_motor_err_t step_motor_device_set_frequency(void* user, uint32_t fre
 static step_motor_err_t step_motor_device_set_direction(void* user,
                                                         step_motor_direction_t direction)
 {
-    joint_manager_t* manager = (joint_manager_t*)user;
+    assert(user);
 
+    joint_manager_t* manager = (joint_manager_t*)user;
     a4988_set_direction(&manager->a4988, (a4988_direction_t)direction);
 
     return STEP_MOTOR_ERR_OK;
@@ -122,8 +129,9 @@ static step_motor_err_t step_motor_device_set_direction(void* user,
 
 static motor_driver_err_t motor_driver_joint_set_speed(void* user, float32_t speed)
 {
-    joint_manager_t* manager = (joint_manager_t*)user;
+    assert(user);
 
+    joint_manager_t* manager = (joint_manager_t*)user;
     step_motor_set_speed(&manager->motor, speed);
 
     return MOTOR_DRIVER_ERR_OK;
@@ -131,8 +139,9 @@ static motor_driver_err_t motor_driver_joint_set_speed(void* user, float32_t spe
 
 static motor_driver_err_t motor_driver_encoder_get_position(void* user, float32_t* position)
 {
-    joint_manager_t* manager = (joint_manager_t*)user;
+    assert(user && position);
 
+    joint_manager_t* manager = (joint_manager_t*)user;
     *position = step_motor_get_position(&manager->motor);
 
     return MOTOR_DRIVER_ERR_OK;
@@ -143,8 +152,9 @@ static motor_driver_err_t motor_driver_regulator_get_control(void* user,
                                                              float32_t* control,
                                                              float32_t delta_time)
 {
-    joint_manager_t* manager = (joint_manager_t*)user;
+    assert(user && control);
 
+    joint_manager_t* manager = (joint_manager_t*)user;
     *control = pid_regulator_get_sat_control(&manager->regulator, error, delta_time);
 
     return MOTOR_DRIVER_ERR_OK;
@@ -152,8 +162,9 @@ static motor_driver_err_t motor_driver_regulator_get_control(void* user,
 
 static motor_driver_err_t motor_driver_fault_get_current(void* user, float32_t* current)
 {
-    joint_manager_t* manager = (joint_manager_t*)user;
+    assert(user && current);
 
+    joint_manager_t* manager = (joint_manager_t*)user;
     *current = 1.0F;
 
     return MOTOR_DRIVER_ERR_OK;
@@ -161,6 +172,8 @@ static motor_driver_err_t motor_driver_fault_get_current(void* user, float32_t* 
 
 static inline bool joint_manager_has_joint_event(QueueHandle_t queue)
 {
+    assert(queue);
+
     return uxQueueMessagesWaiting(queue);
 }
 
@@ -171,11 +184,15 @@ static inline bool joint_manager_send_joints_notify(joints_notify_t notify)
 
 static inline bool joint_manager_receive_joint_event(QueueHandle_t queue, joint_event_t* event)
 {
+    assert(event);
+
     return xQueueReceive(queue, event, pdMS_TO_TICKS(1)) == pdTRUE;
 }
 
 static inline bool joint_manager_receive_joint_notify(joint_notify_t* notify)
 {
+    assert(notify);
+
     return xTaskNotifyWait(0, JOINT_NOTIFY_ALL, (uint32_t*)notify, pdMS_TO_TICKS(1)) == pdTRUE;
 }
 

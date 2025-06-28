@@ -30,7 +30,7 @@ static void uart_task_func(void*)
         HAL_UART_Transmit(&huart2, buffer, bytes_received, 100);
         memset(buffer, 0, sizeof(buffer));
 
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
