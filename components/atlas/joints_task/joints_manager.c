@@ -147,21 +147,31 @@ atlas_err_t joints_manager_process(joints_manager_t* manager)
 {
     assert(manager);
 
+    atlas_err_t err = ATLAS_ERR_OK;
+
     joints_notify_t notify;
     if (joints_manager_receive_joints_notify(&notify)) {
-        atlas_err_t err = joints_manager_notify_handler(manager, notify);
+        err = joints_manager_notify_handler(manager, notify);
         if (err != ATLAS_ERR_OK) {
+            printf("joints_manager_notify_handler: %s\n\r", atlas_err_to_string(err));
             return err;
         }
     }
 
     joints_event_t event;
     if (joints_manager_receive_joints_event(&event)) {
-        return joints_manager_event_handler(manager, &event);
+        err = joints_manager_event_handler(manager, &event);
+        if (err != ATLAS_ERR_OK) {
+            printf("joints_manager_event_handler: %s\n\r", atlas_err_to_string(err));
+            return err;
+        }
     }
 
     return ATLAS_ERR_OK;
 }
+
+static joint_task_config_t joint_task_configs[JOINT_NUM];
+static joint_queue_config_t joint_queue_configs[JOINT_NUM];
 
 static joint_task_ctx_t joint_task_ctxs[JOINT_NUM] = {
     [JOINT_NUM_1] = {.manager = {.delta_timer = &htim2,
@@ -176,7 +186,12 @@ static joint_task_ctx_t joint_task_ctxs[JOINT_NUM] = {
                                 .min_angle = 0.0F,
                                 .max_angle = 359.0F,
                                 .min_speed = 10.0F,
-                                .max_speed = 500.0F}}};
+                                .max_speed = 500.0F}},
+    [JOINT_NUM_2] = {},
+    [JOINT_NUM_3] = {},
+    [JOINT_NUM_4] = {},
+    [JOINT_NUM_5] = {},
+    [JOINT_NUM_6] = {}};
 
 atlas_err_t joints_manager_initialize(joints_manager_t* manager)
 {
@@ -184,29 +199,28 @@ atlas_err_t joints_manager_initialize(joints_manager_t* manager)
 
     manager->is_running = false;
 
-    portENTER_CRITICAL();
     for (joint_num_t num = 0; num < JOINT_NUM; ++num) {
-        joint_task_initialize(&joint_task_ctxs[num]);
-        joint_queue_initialize(&joint_task_ctxs[num]);
-
-        manager->joint_ctxs[num].task = joint_task_ctxs[num].task;
-        manager->joint_ctxs[num].queue = joint_task_ctxs[num].queue;
+        manager->joint_ctxs[num].queue =
+            joint_queue_initialize(&joint_task_ctxs[num], &joint_queue_configs[num]);
+        manager->joint_ctxs[num].task =
+            joint_task_initialize(&joint_task_ctxs[num], &joint_task_configs[num]);
     }
-    portEXIT_CRITICAL();
+
+    vTaskDelay(100);
 
     return ATLAS_ERR_OK;
 }
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
 {
-    // BaseType_t task_woken = pdFALSE;
+    BaseType_t task_woken = pdFALSE;
 
-    // if (htim->Instance == TIM1) {
-    //     xTaskNotifyFromISR(joint_task_ctxs[JOINT_NUM_1].task,
-    //                        JOINT_NOTIFY_PWM_PULSE,
-    //                        eSetBits,
-    //                        &task_woken);
-    // }
+    if (htim->Instance == TIM1) {
+        xTaskNotifyFromISR(joint_task_ctxs[JOINT_NUM_1].task,
+                           JOINT_NOTIFY_PWM_PULSE,
+                           eSetBits,
+                           &task_woken);
+    }
 
-    // portYIELD_FROM_ISR(task_woken);
+    portYIELD_FROM_ISR(task_woken);
 }

@@ -24,7 +24,7 @@ static void joints_task_func(void*)
     joints_manager_initialize(&joints_manager);
 
     while (1) {
-        assert(joints_manager_process(&joints_manager) == ATLAS_ERR_OK);
+        joints_manager_process(&joints_manager);
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }

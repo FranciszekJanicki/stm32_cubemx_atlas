@@ -155,14 +155,19 @@ static motor_driver_err_t motor_driver_fault_get_current(void* user, float32_t* 
     return MOTOR_DRIVER_ERR_OK;
 }
 
+static inline bool joint_manager_has_joint_event(QueueHandle_t queue)
+{
+    return uxQueueMessagesWaiting(queue);
+}
+
 static inline bool joint_manager_receive_joint_event(QueueHandle_t queue, joint_event_t* event)
 {
-    return xQueueReceive(queue, event, pdMS_TO_TICKS(0)) == pdTRUE;
+    return xQueueReceive(queue, event, pdMS_TO_TICKS(1)) == pdTRUE;
 }
 
 static inline bool joint_manager_receive_joint_notify(joint_notify_t* notify)
 {
-    return xTaskNotifyWait(0, JOINT_NOTIFY_ALL, (uint32_t*)notify, pdMS_TO_TICKS(0)) == pdTRUE;
+    return xTaskNotifyWait(0, JOINT_NOTIFY_ALL, (uint32_t*)notify, pdMS_TO_TICKS(1)) == pdTRUE;
 }
 
 static atlas_err_t joint_manager_event_start_handler(joint_manager_t* manager,
@@ -276,20 +281,29 @@ atlas_err_t joint_manager_process(joint_manager_t* manager)
 {
     assert(manager);
 
+    atlas_err_t err = ATLAS_ERR_OK;
+
     joint_notify_t notify;
     if (joint_manager_receive_joint_notify(&notify)) {
-        atlas_err_t err = joint_manager_notify_handler(manager, notify);
+        err = joint_manager_notify_handler(manager, notify);
         if (err != ATLAS_ERR_OK) {
+            printf("joint_manager_notify_handler: %s\n\r", atlas_err_to_string(err));
             return err;
         }
     }
 
     joint_event_t event;
-    if (joint_manager_receive_joint_event(manager->joint_queue, &event)) {
-        return joint_manager_event_handler(manager, &event);
+    while (joint_manager_has_joint_event(manager->joint_queue)) {
+        if (joint_manager_receive_joint_event(manager->joint_queue, &event)) {
+            err = joint_manager_event_handler(manager, &event);
+            if (err != ATLAS_ERR_OK) {
+                printf("joint_manager_event_handler: %s\n\r", atlas_err_to_string(err));
+                return err;
+            }
+        }
     }
 
-    return ATLAS_ERR_OK;
+    return err;
 }
 
 atlas_err_t joint_manager_initialize(joint_manager_t* manager, joint_config_t const* config)

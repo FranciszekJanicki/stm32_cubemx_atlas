@@ -10,37 +10,37 @@
 static void joint_task_func(void* param)
 {
     joint_task_ctx_t* ctx = (joint_task_ctx_t*)param;
-
     ctx->manager.joint_queue = ctx->queue;
+
     joint_manager_initialize(&ctx->manager, &ctx->config);
 
     while (1) {
-        //  joint_manager_process(&ctx->manager);
+        joint_manager_process(&ctx->manager);
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
-void joint_task_initialize(joint_task_ctx_t* ctx)
+TaskHandle_t joint_task_initialize(joint_task_ctx_t* ctx, joint_task_config_t* config)
 {
     ctx->task = xTaskCreateStatic(joint_task_func,
                                   "joint_task",
                                   JOINT_TASK_STACK_DEPTH,
                                   (void*)ctx,
                                   JOINT_TASK_PRIORITY,
-                                  ctx->task_stack,
-                                  &ctx->task_buffer);
+                                  config->task_stack,
+                                  &config->task_buffer);
 
-    assert(ctx->task);
+    return ctx->task;
 }
 
-void joint_queue_initialize(joint_task_ctx_t* ctx)
+QueueHandle_t joint_queue_initialize(joint_task_ctx_t* ctx, joint_queue_config_t* config)
 {
     ctx->queue = xQueueCreateStatic(JOINT_QUEUE_ITEMS,
                                     JOINT_QUEUE_ITEM_SIZE,
-                                    ctx->queue_storage,
-                                    &ctx->queue_buffer);
+                                    config->queue_storage,
+                                    &config->queue_buffer);
 
-    assert(ctx->queue);
+    return ctx->queue;
 }
 
 #undef JOINT_TASK_STACK_DEPTH
