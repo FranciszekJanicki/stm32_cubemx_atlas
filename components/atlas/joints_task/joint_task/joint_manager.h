@@ -15,7 +15,7 @@
 #include <stm32l4xx_hal.h>
 
 typedef struct {
-    float32_t position;
+    float32_t joint_position;
     float32_t delta_time;
     bool is_running;
 

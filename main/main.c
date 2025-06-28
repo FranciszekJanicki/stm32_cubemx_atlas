@@ -27,25 +27,25 @@ int main(void)
     joints_queue_initialize();
     kinematics_queue_initialize();
 
-    kinematics_task_initialize();
     uart_task_initialize();
     joints_task_initialize();
+    kinematics_task_initialize();
 
     vTaskStartScheduler();
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
+    BaseType_t task_woken = pdFALSE;
+
     if (htim->Instance == TIM4) {
         HAL_IncTick();
     } else if (htim->Instance == TIM2) {
-        BaseType_t task_woken = pdFALSE;
-
         xTaskNotifyFromISR(task_manager_get(TASK_TYPE_JOINTS),
                            JOINTS_NOTIFY_DELTA_TIMER,
                            eSetBits,
                            &task_woken);
-
-        portYIELD_FROM_ISR(task_woken);
     }
+
+    portYIELD_FROM_ISR(task_woken);
 }

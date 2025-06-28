@@ -9,6 +9,7 @@
 #include "stm32l4xx_hal.h"
 #include "task.h"
 #include "task_manager.h"
+#include "utility.h"
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -181,7 +182,7 @@ static inline bool joint_manager_receive_joint_notify(joint_notify_t* notify)
 static atlas_err_t joint_manager_event_start_handler(joint_manager_t* manager,
                                                      joint_event_payload_start_t const* payload)
 {
-    ATLAS_LOG(TAG, "joint_manager_event_start_handler");
+    LOG(TAG, "joint_manager_event_start_handler");
 
     if (manager->is_running) {
         return ATLAS_ERR_ALREADY_RUNNING;
@@ -195,7 +196,7 @@ static atlas_err_t joint_manager_event_start_handler(joint_manager_t* manager,
 static atlas_err_t joint_manager_event_stop_handler(joint_manager_t* manager,
                                                     joint_event_payload_stop_t const* payload)
 {
-    ATLAS_LOG(TAG, "joint_manager_event_stop_handler");
+    LOG(TAG, "joint_manager_event_stop_handler");
 
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
@@ -209,13 +210,13 @@ static atlas_err_t joint_manager_event_stop_handler(joint_manager_t* manager,
 static atlas_err_t joint_manager_event_update_handler(joint_manager_t* manager,
                                                       joint_event_payload_update_t const* update)
 {
-    ATLAS_LOG(TAG, "joint_manager_event_update_handler");
+    LOG(TAG, "joint_manager_event_update_handler");
 
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
     }
 
-    manager->position = update->position;
+    manager->joint_position = update->joint_position;
     manager->delta_time = update->delta_time;
 
     return ATLAS_ERR_OK;
@@ -223,20 +224,20 @@ static atlas_err_t joint_manager_event_update_handler(joint_manager_t* manager,
 
 static atlas_err_t joint_manager_notify_delta_timer_handler(joint_manager_t* manager)
 {
-    ATLAS_LOG(TAG, "joint_manager_notify_delta_timer_handler");
+    LOG(TAG, "joint_manager_notify_delta_timer_handler");
 
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
     }
 
-    motor_driver_set_position(&manager->driver, manager->position, manager->delta_time);
+    motor_driver_set_position(&manager->driver, manager->joint_position, manager->delta_time);
 
     return ATLAS_ERR_OK;
 }
 
 static atlas_err_t joint_manager_notify_pwm_pulse_handler(joint_manager_t* manager)
 {
-    ATLAS_LOG(TAG, "joint_manager_notify_pwm_pulse_handler");
+    LOG(TAG, "joint_manager_notify_pwm_pulse_handler");
 
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
@@ -250,10 +251,10 @@ static atlas_err_t joint_manager_notify_pwm_pulse_handler(joint_manager_t* manag
 static atlas_err_t joint_manager_notify_handler(joint_manager_t* manager, joint_notify_t notify)
 {
     if (notify & JOINT_NOTIFY_DELTA_TIMER) {
-        ATLAS_RET_ON_ERR(joint_manager_notify_delta_timer_handler(manager));
+        RET_ON_ERR(joint_manager_notify_delta_timer_handler(manager));
     }
     if (notify & JOINT_NOTIFY_PWM_PULSE) {
-        ATLAS_RET_ON_ERR(joint_manager_notify_pwm_pulse_handler(manager));
+        RET_ON_ERR(joint_manager_notify_pwm_pulse_handler(manager));
     }
 
     return ATLAS_ERR_OK;
@@ -277,21 +278,19 @@ atlas_err_t joint_manager_process(joint_manager_t* manager)
 {
     assert(manager);
 
-    atlas_err_t err = ATLAS_ERR_OK;
-
     joint_notify_t notify;
     if (joint_manager_receive_joint_notify(&notify)) {
-        ATLAS_RET_ON_ERR(joint_manager_notify_handler(manager, notify));
+        RET_ON_ERR(joint_manager_notify_handler(manager, notify));
     }
 
     joint_event_t event;
     while (joint_manager_has_joint_event(manager->joint_queue)) {
         if (joint_manager_receive_joint_event(manager->joint_queue, &event)) {
-            ATLAS_RET_ON_ERR(joint_manager_event_handler(manager, &event));
+            RET_ON_ERR(joint_manager_event_handler(manager, &event));
         }
     }
 
-    return err;
+    return ATLAS_ERR_OK;
 }
 
 atlas_err_t joint_manager_initialize(joint_manager_t* manager, joint_config_t const* config)

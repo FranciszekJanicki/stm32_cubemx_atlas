@@ -1,5 +1,6 @@
 #include "joints_task.h"
 #include "FreeRTOS.h"
+#include "atlas_notify.h"
 #include "joint_task.h"
 #include "joints_manager.h"
 #include "queue.h"
@@ -7,6 +8,7 @@
 #include "task.h"
 #include "task_manager.h"
 #include "tim.h"
+#include "utility.h"
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -14,7 +16,7 @@
 static char const* const TAG = "joints_task";
 
 #define JOINTS_TASK_STACK_DEPTH (4096U / sizeof(StackType_t))
-#define JOINTS_TASK_PRIORITY (2U)
+#define JOINTS_TASK_PRIORITY (1U)
 
 #define JOINTS_QUEUE_ITEMS (10U)
 #define JOINTS_QUEUE_ITEM_SIZE (sizeof(joints_event_t))
@@ -41,7 +43,7 @@ static void joints_task_func(void*)
     joints_manager_initialize(&joints_manager);
 
     while (1) {
-        ATLAS_LOG_ON_ERR(TAG, joints_manager_process(&joints_manager));
+        LOG_ON_ERR(TAG, joints_manager_process(&joints_manager));
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
@@ -72,6 +74,8 @@ void joint_queues_initialize(void)
 
 void joints_task_initialize(void)
 {
+    joint_tasks_initialize();
+
     static StaticTask_t joints_task_buffer;
     static StackType_t joints_task_stack[JOINTS_TASK_STACK_DEPTH];
 
@@ -84,12 +88,12 @@ void joints_task_initialize(void)
                                                  &joints_task_buffer);
 
     task_manager_set(TASK_TYPE_JOINTS, joints_task);
-
-    joint_tasks_initialize();
 }
 
 void joints_queue_initialize(void)
 {
+    joint_queues_initialize();
+
     static StaticQueue_t joints_queue_buffer;
     static uint8_t joints_queue_storage[JOINTS_QUEUE_STORAGE_SIZE];
 
@@ -99,8 +103,20 @@ void joints_queue_initialize(void)
                                                     &joints_queue_buffer);
 
     queue_manager_set(QUEUE_TYPE_JOINTS, joints_queue);
+}
 
-    joint_queues_initialize();
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
+{
+    BaseType_t task_woken = pdFALSE;
+
+    if (htim->Instance == TIM1) {
+        xTaskNotifyFromISR(joint_ctxs[JOINT_NUM_1].manager.joint_task,
+                           JOINT_NOTIFY_PWM_PULSE,
+                           eSetBits,
+                           &task_woken);
+    }
+
+    portYIELD_FROM_ISR(task_woken);
 }
 
 #undef JOINTS_TASK_STACK_DEPTH

@@ -1,5 +1,5 @@
-#ifndef COMMON_NOTIFY_H
-#define COMMON_NOTIFY_H
+#ifndef COMMON_ATLAS_NOTIFY_H
+#define COMMON_ATLAS_NOTIFY_H
 
 #include "atlas_config.h"
 
@@ -21,4 +21,4 @@ typedef enum {
     KINEMATICS_NOTIFY_ALL = (KINEMATICS_NOTIFY_JOINTS_READY),
 } kinematics_notify_t;
 
-#endif // COMMON_NOTIFY_H
+#endif // COMMON_ATLAS_NOTIFY_H

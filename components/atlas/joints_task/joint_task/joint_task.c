@@ -2,6 +2,7 @@
 #include "FreeRTOS.h"
 #include "joint_manager.h"
 #include "task.h"
+#include "utility.h"
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -16,7 +17,7 @@ static void joint_task_func(void* task_param)
     joint_manager_initialize(&joint_ctx->manager, &joint_ctx->config);
 
     while (1) {
-        ATLAS_LOG_ON_ERR(TAG, joint_manager_process(&joint_ctx->manager));
+        LOG_ON_ERR(TAG, joint_manager_process(&joint_ctx->manager));
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }

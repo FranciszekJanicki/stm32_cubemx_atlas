@@ -1,5 +1,5 @@
-#ifndef COMMON_EVENT_H
-#define COMMON_EVENT_H
+#ifndef COMMON_ATLAS_EVENT_H
+#define COMMON_ATLAS_EVENT_H
 
 #include "atlas_config.h"
 
@@ -16,7 +16,7 @@ typedef struct {
 } joint_event_payload_stop_t;
 
 typedef struct {
-    float position;
+    float joint_position;
     float delta_time;
 } joint_event_payload_update_t;
 
@@ -44,7 +44,7 @@ typedef struct {
 } joints_event_payload_stop_t;
 
 typedef struct {
-    float positions[JOINT_NUM];
+    joint_space_t joint_space;
 } joints_event_payload_update_t;
 
 typedef union {
@@ -61,7 +61,8 @@ typedef struct {
 typedef enum {
     KINEMATICS_EVENT_TYPE_START,
     KINEMATICS_EVENT_TYPE_STOP,
-    KINEMATICS_EVENT_TYPE_UPDATE,
+    KINEMATICS_EVENT_TYPE_DIRECT,
+    KINEMATICS_EVENT_TYPE_INVERSE,
 } kinematics_event_type_t;
 
 typedef struct {
@@ -71,14 +72,18 @@ typedef struct {
 } kinematics_event_payload_stop_t;
 
 typedef struct {
-    float position_x, position_y, position_z;
-    float orientation_x, orientation_y, orientation_z;
-} kinematics_event_payload_update_t;
+    joint_space_t joint_space;
+} kinematics_event_payload_direct_t;
+
+typedef struct {
+    cartesian_space_t cartesian_space;
+} kinematics_event_payload_inverse_t;
 
 typedef union {
     kinematics_event_payload_start_t start;
     kinematics_event_payload_stop_t stop;
-    kinematics_event_payload_update_t update;
+    kinematics_event_payload_direct_t direct;
+    kinematics_event_payload_inverse_t inverse;
 } kinematics_event_payload_t;
 
 typedef struct {
@@ -86,4 +91,4 @@ typedef struct {
     kinematics_event_payload_t payload;
 } kinematics_event_t;
 
-#endif // COMMON_EVENT_H
+#endif // COMMON_ATLAS_EVENT_H
