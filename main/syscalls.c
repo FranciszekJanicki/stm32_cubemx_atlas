@@ -1,5 +1,4 @@
 #include "FreeRTOS.h"
-#include "config.h"
 #include "stdio.h"
 #include "stream_buffer.h"
 #include "stream_buffer_manager.h"

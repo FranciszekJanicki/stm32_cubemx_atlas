@@ -1,7 +1,7 @@
 add_library(common STATIC)
 
 target_sources(common PRIVATE
-    err.c
+    atlas_err.c
 )
 
 target_include_directories(common PUBLIC

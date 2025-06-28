@@ -41,7 +41,7 @@ static void joints_task_func(void*)
     joints_manager_initialize(&joints_manager);
 
     while (1) {
-        LOG_ON_ERROR(TAG, joints_manager_process(&joints_manager));
+        ATLAS_LOG_ON_ERR(TAG, joints_manager_process(&joints_manager));
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }

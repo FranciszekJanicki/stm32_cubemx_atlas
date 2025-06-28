@@ -1,7 +1,7 @@
 #ifndef COMMON_NOTIFY_H
 #define COMMON_NOTIFY_H
 
-#include "config.h"
+#include "atlas_config.h"
 
 typedef enum {
     JOINT_NOTIFY_DELTA_TIMER = (1 << 0),
@@ -12,7 +12,7 @@ typedef enum {
 typedef enum {
     JOINTS_NOTIFY_JOINT_READY = ((1 << JOINT_NUM_1) | (1 << JOINT_NUM_2) | (1 << JOINT_NUM_3) |
                                  (1 << JOINT_NUM_4) | (1 << JOINT_NUM_5) | (1 << JOINT_NUM_6)),
-    JOINTS_NOTIFY_DELTA_TIMER = (1 << JOINT_NUM),
+    JOINTS_NOTIFY_DELTA_TIMER = (1 << 6),
     JOINTS_NOTIFY_ALL = (JOINTS_NOTIFY_JOINT_READY | JOINTS_NOTIFY_DELTA_TIMER),
 } joints_notify_t;
 

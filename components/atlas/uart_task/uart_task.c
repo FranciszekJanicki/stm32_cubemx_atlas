@@ -1,6 +1,6 @@
 #include "uart_task.h"
 #include "FreeRTOS.h"
-#include "config.h"
+#include "atlas_config.h"
 #include "stream_buffer.h"
 #include "stream_buffer_manager.h"
 #include "task.h"

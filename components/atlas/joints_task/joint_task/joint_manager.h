@@ -3,8 +3,8 @@
 
 #include "FreeRTOS.h"
 #include "a4988.h"
-#include "config.h"
-#include "err.h"
+#include "atlas_config.h"
+#include "atlas_err.h"
 #include "motor_driver.h"
 #include "pid_regulator.h"
 #include "queue.h"
@@ -45,7 +45,7 @@ typedef struct {
     joint_num_t num;
 } joint_config_t;
 
-error_t joint_manager_initialize(joint_manager_t* manager, joint_config_t const* config);
-error_t joint_manager_process(joint_manager_t* manager);
+atlas_err_t joint_manager_initialize(joint_manager_t* manager, joint_config_t const* config);
+atlas_err_t joint_manager_process(joint_manager_t* manager);
 
 #endif // JOINT_TASK_JOINT_MANAGER_H

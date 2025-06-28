@@ -1,6 +1,6 @@
 #include "kinematics_task.h"
 #include "FreeRTOS.h"
-#include "event.h"
+#include "atlas_event.h"
 #include "kinematics_manager.h"
 #include "queue.h"
 #include "queue_manager.h"
@@ -25,7 +25,7 @@ static void kinematics_task_func(void*)
     kinematics_manager_initialize(&kinematics_manager);
 
     while (1) {
-        LOG_ON_ERROR(TAG, kinematics_manager_process(&kinematics_manager));
+        ATLAS_LOG_ON_ERR(TAG, kinematics_manager_process(&kinematics_manager));
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }

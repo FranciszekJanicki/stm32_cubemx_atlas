@@ -1,8 +1,8 @@
 #include "joints_manager.h"
 #include "FreeRTOS.h"
+#include "atlas_notify.h"
 #include "joint_manager.h"
 #include "joint_task.h"
-#include "notify.h"
 #include "queue.h"
 #include "queue_manager.h"
 #include "task.h"
@@ -50,19 +50,19 @@ static inline bool joints_manager_all_joints_ready(joints_manager_t const* manag
     return true;
 }
 
-static error_t joints_manager_event_start_handler(joints_manager_t* manager,
-                                                  joints_event_payload_start_t const* payload)
+static atlas_err_t joints_manager_event_start_handler(joints_manager_t* manager,
+                                                      joints_event_payload_start_t const* payload)
 {
-    LOG(TAG, "joints_manager_event_start_handler");
+    ATLAS_LOG(TAG, "joints_manager_event_start_handler");
 
     if (manager->is_running) {
-        return ERROR_ALREADY_RUNNING;
+        return ATLAS_ERR_ALREADY_RUNNING;
     }
 
     joint_event_t event = {.type = JOINT_EVENT_TYPE_START};
     for (uint8_t num = 0; num < JOINT_NUM; ++num) {
         if (!joints_manager_send_joint_event(manager->joint_ctxs[num].queue, &event)) {
-            return ERROR_FAIL;
+            return ATLAS_ERR_FAIL;
         }
     }
 
@@ -70,22 +70,22 @@ static error_t joints_manager_event_start_handler(joints_manager_t* manager,
 
     manager->is_running = true;
 
-    return ERROR_OK;
+    return ATLAS_ERR_OK;
 }
 
-static error_t joints_manager_event_stop_handler(joints_manager_t* manager,
-                                                 joints_event_payload_stop_t const* payload)
+static atlas_err_t joints_manager_event_stop_handler(joints_manager_t* manager,
+                                                     joints_event_payload_stop_t const* payload)
 {
-    LOG(TAG, "joints_manager_event_stop_handler");
+    ATLAS_LOG(TAG, "joints_manager_event_stop_handler");
 
     if (!manager->is_running) {
-        return ERROR_NOT_RUNNING;
+        return ATLAS_ERR_NOT_RUNNING;
     }
 
     joint_event_t event = {.type = JOINT_EVENT_TYPE_STOP};
     for (uint8_t num = 0; num < JOINT_NUM; ++num) {
         if (!joints_manager_send_joint_event(manager->joint_ctxs[num].queue, &event)) {
-            return ERROR_FAIL;
+            return ATLAS_ERR_FAIL;
         }
     }
 
@@ -93,115 +93,111 @@ static error_t joints_manager_event_stop_handler(joints_manager_t* manager,
 
     manager->is_running = false;
 
-    return ERROR_OK;
+    return ATLAS_ERR_OK;
 }
 
-static error_t joints_manager_event_update_handler(joints_manager_t* manager,
-                                                   joints_event_payload_update_t const* payload)
+static atlas_err_t joints_manager_event_update_handler(joints_manager_t* manager,
+                                                       joints_event_payload_update_t const* payload)
 {
-    LOG(TAG, "joints_manager_event_update_handler");
+    ATLAS_LOG(TAG, "joints_manager_event_update_handler");
 
     if (!manager->is_running) {
-        return ERROR_NOT_RUNNING;
+        return ATLAS_ERR_NOT_RUNNING;
     }
 
     joint_event_t event = {.type = JOINT_EVENT_TYPE_UPDATE};
     for (uint8_t num = 0; num < JOINT_NUM; ++num) {
         event.payload.update.position = payload->positions[num];
-        LOG(TAG, "num: %d, position: %f", num, event.payload.update.position);
+        ATLAS_LOG(TAG, "num: %d, position: %f", num, event.payload.update.position);
 
         if (!joints_manager_send_joint_event(manager->joint_ctxs[num].queue, &event)) {
-            return ERROR_FAIL;
+            return ATLAS_ERR_FAIL;
         }
     }
 
-    return ERROR_OK;
+    return ATLAS_ERR_OK;
 }
 
-static error_t joints_manager_notify_joint_ready_handler(joints_manager_t* manager, joint_num_t num)
+static atlas_err_t joints_manager_notify_joint_ready_handler(joints_manager_t* manager,
+                                                             joint_num_t num)
 {
-    LOG(TAG, "joints_manager_notify_joint_ready_handler");
+    ATLAS_LOG(TAG, "joints_manager_notify_joint_ready_handler");
 
     manager->joint_ctxs[num].is_ready = true;
 
     if (joints_manager_all_joints_ready(manager)) {
         if (!joints_manager_send_kinematics_notify(KINEMATICS_NOTIFY_JOINTS_READY)) {
-            return ERROR_FAIL;
+            return ATLAS_ERR_FAIL;
         }
     }
 
-    return ERROR_OK;
+    return ATLAS_ERR_OK;
 }
 
-static error_t joints_manager_notify_delta_timer_handler(joints_manager_t* manager)
+static atlas_err_t joints_manager_notify_delta_timer_handler(joints_manager_t* manager)
 {
-    LOG(TAG, "joints_manager_notify_delta_timer_handler");
+    ATLAS_LOG(TAG, "joints_manager_notify_delta_timer_handler");
 
     if (!manager->is_running) {
-        return ERROR_NOT_RUNNING;
+        return ATLAS_ERR_NOT_RUNNING;
     }
 
     for (uint8_t num = 0; num < JOINT_NUM; ++num) {
         joints_manager_send_joint_notify(manager->joint_ctxs[num].task, JOINTS_NOTIFY_DELTA_TIMER);
     }
 
-    return ERROR_OK;
+    return ATLAS_ERR_OK;
 }
 
-static error_t joints_manager_notify_handler(joints_manager_t* manager, joints_notify_t notify)
+static atlas_err_t joints_manager_notify_handler(joints_manager_t* manager, joints_notify_t notify)
 {
     if (notify & JOINTS_NOTIFY_DELTA_TIMER) {
-        RET_ON_ERROR(joints_manager_notify_delta_timer_handler(manager));
+        ATLAS_RET_ON_ERR(joints_manager_notify_delta_timer_handler(manager));
     }
     if (notify & JOINTS_NOTIFY_JOINT_READY) {
         for (uint8_t num = 0; num < JOINT_NUM; ++num) {
-            if (notify & num) {
-                RET_ON_ERROR(joints_manager_notify_joint_ready_handler(manager, num));
+            if (notify & (1 << num)) {
+                ATLAS_RET_ON_ERR(joints_manager_notify_joint_ready_handler(manager, num));
             }
         }
     }
 
-    return ERROR_OK;
+    return ATLAS_ERR_OK;
 }
 
-static error_t joints_manager_event_handler(joints_manager_t* manager, joints_event_t const* event)
+static atlas_err_t joints_manager_event_handler(joints_manager_t* manager,
+                                                joints_event_t const* event)
 {
     switch (event->type) {
-        case JOINTS_EVENT_TYPE_START: {
+        case JOINTS_EVENT_TYPE_START:
             return joints_manager_event_start_handler(manager, &event->payload.start);
-        }
-        case JOINTS_EVENT_TYPE_STOP: {
+        case JOINTS_EVENT_TYPE_STOP:
             return joints_manager_event_stop_handler(manager, &event->payload.stop);
-        }
-        case JOINTS_EVENT_TYPE_UPDATE: {
+        case JOINTS_EVENT_TYPE_UPDATE:
             return joints_manager_event_update_handler(manager, &event->payload.update);
-        }
-        default: {
-            return ERROR_UNKNOWN_EVENT;
-        }
+        default:
+            return ATLAS_ERR_UNKNOWN_EVENT;
     }
-
-    return ERROR_OK;
 }
 
-error_t joints_manager_process(joints_manager_t* manager)
+atlas_err_t joints_manager_process(joints_manager_t* manager)
 {
     assert(manager);
 
     joints_notify_t notify;
     if (joints_manager_receive_joints_notify(&notify)) {
-        RET_ON_ERROR(joints_manager_notify_handler(manager, notify));
+        ATLAS_RET_ON_ERR(joints_manager_notify_handler(manager, notify));
     }
 
     joints_event_t event;
     if (joints_manager_receive_joints_event(&event)) {
-        RET_ON_ERROR(joints_manager_event_handler(manager, &event));
+        ATLAS_RET_ON_ERR(joints_manager_event_handler(manager, &event));
     }
 
-    return ERROR_OK;
+    return ATLAS_ERR_OK;
 }
 
-error_t joints_manager_initialize(joints_manager_t* manager)
+atlas_err_t joints_manager_initialize(joints_manager_t* manager)
 {
     assert(manager);
 
@@ -211,7 +207,7 @@ error_t joints_manager_initialize(joints_manager_t* manager)
         manager->joint_ctxs[num].is_ready = false;
     }
 
-    return ERROR_OK;
+    return ATLAS_ERR_OK;
 }
 
 // void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)

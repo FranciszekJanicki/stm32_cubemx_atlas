@@ -1,7 +1,7 @@
 #include "kinematics_manager.h"
 #include "FreeRTOS.h"
-#include "event.h"
-#include "notify.h"
+#include "atlas_event.h"
+#include "atlas_notify.h"
 #include "queue_manager.h"
 #include "task.h"
 #include "task_manager.h"
@@ -44,132 +44,124 @@ static inline void kinematics_manager_get_joints_event_payload_update(
     payload->positions[JOINT_NUM_6] = 0.0F;
 }
 
-static error_t kinematics_manager_event_start_handler(
+static atlas_err_t kinematics_manager_event_start_handler(
     kinematics_manager_t* manager,
     kinematics_event_payload_start_t const* payload)
 {
-    LOG(TAG, "kinematics_manager_event_start_handler");
+    ATLAS_LOG(TAG, "kinematics_manager_event_start_handler");
 
     if (manager->is_running) {
-        return ERROR_ALREADY_RUNNING;
+        return ATLAS_ERR_ALREADY_RUNNING;
     }
 
     joints_event_t event = {.type = JOINTS_EVENT_TYPE_START};
     // if (manager->is_joints_ready) {
     if (!kinematics_manager_send_joints_event(&event)) {
-        return ERROR_FAIL;
+        return ATLAS_ERR_FAIL;
     }
     // }
 
     manager->is_running = true;
 
-    return ERROR_OK;
+    return ATLAS_ERR_OK;
 }
 
-static error_t kinematics_manager_event_stop_handler(kinematics_manager_t* manager,
-                                                     kinematics_event_payload_stop_t const* payload)
+static atlas_err_t kinematics_manager_event_stop_handler(
+    kinematics_manager_t* manager,
+    kinematics_event_payload_stop_t const* payload)
 {
-    LOG(TAG, "kinematics_manager_event_stop_handler");
+    ATLAS_LOG(TAG, "kinematics_manager_event_stop_handler");
 
     if (!manager->is_running) {
-        return ERROR_NOT_RUNNING;
+        return ATLAS_ERR_NOT_RUNNING;
     }
 
     joints_event_t event = {.type = JOINTS_EVENT_TYPE_STOP};
     if (!kinematics_manager_send_joints_event(&event)) {
-        return ERROR_FAIL;
+        return ATLAS_ERR_FAIL;
     }
 
     manager->is_running = false;
 
-    return ERROR_OK;
+    return ATLAS_ERR_OK;
 }
 
-static error_t kinematics_manager_event_update_handler(
+static atlas_err_t kinematics_manager_event_update_handler(
     kinematics_manager_t* manager,
     kinematics_event_payload_update_t const* payload)
 {
-    LOG(TAG, "kinematics_manager_event_update_handler");
+    ATLAS_LOG(TAG, "kinematics_manager_event_update_handler");
 
     if (!manager->is_running) {
-        return ERROR_NOT_RUNNING;
+        return ATLAS_ERR_NOT_RUNNING;
     }
 
     joints_event_t event = {.type = JOINTS_EVENT_TYPE_UPDATE};
     kinematics_manager_get_joints_event_payload_update(&event.payload.update);
     if (!kinematics_manager_send_joints_event(&event)) {
-        return ERROR_FAIL;
+        return ATLAS_ERR_FAIL;
     }
 
-    return ERROR_OK;
+    return ATLAS_ERR_OK;
 }
 
-static error_t kinematics_manager_notify_joints_ready_handler(kinematics_manager_t* manager)
+static atlas_err_t kinematics_manager_notify_joints_ready_handler(kinematics_manager_t* manager)
 {
-    LOG(TAG, "kinematics_manager_notify_joints_ready_handler");
+    ATLAS_LOG(TAG, "kinematics_manager_notify_joints_ready_handler");
 
     manager->is_joints_ready = true;
 
     joints_event_t event = {.type = JOINTS_EVENT_TYPE_START};
     if (!kinematics_manager_send_joints_event(&event)) {
-        return ERROR_FAIL;
+        return ATLAS_ERR_FAIL;
     }
 
-    return ERROR_OK;
+    return ATLAS_ERR_OK;
 }
 
-static error_t kinematics_manager_notify_handler(kinematics_manager_t* manager,
-                                                 kinematics_notify_t notify)
+static atlas_err_t kinematics_manager_notify_handler(kinematics_manager_t* manager,
+                                                     kinematics_notify_t notify)
 {
     if (notify & KINEMATICS_NOTIFY_JOINTS_READY) {
-        error_t err = kinematics_manager_notify_joints_ready_handler(manager);
-        if (err != ERROR_OK) {
-            return err;
-        }
-    } else {
-        return ERROR_UNKNOWN_NOTIFY;
+        ATLAS_RET_ON_ERR(kinematics_manager_notify_joints_ready_handler(manager));
     }
 
-    return ERROR_OK;
+    return ATLAS_ERR_OK;
 }
 
-static error_t kinematics_manager_event_handler(kinematics_manager_t* manager,
-                                                kinematics_event_t const* event)
+static atlas_err_t kinematics_manager_event_handler(kinematics_manager_t* manager,
+                                                    kinematics_event_t const* event)
 {
     switch (event->type) {
-        case KINEMATICS_EVENT_TYPE_START: {
+        case KINEMATICS_EVENT_TYPE_START:
             return kinematics_manager_event_start_handler(manager, &event->payload.start);
-        }
-        case KINEMATICS_EVENT_TYPE_STOP: {
+        case KINEMATICS_EVENT_TYPE_STOP:
             return kinematics_manager_event_stop_handler(manager, &event->payload.stop);
-        }
-        case KINEMATICS_EVENT_TYPE_UPDATE: {
+        case KINEMATICS_EVENT_TYPE_UPDATE:
             return kinematics_manager_event_update_handler(manager, &event->payload.update);
-        }
-        default: {
-            return ERROR_UNKNOWN_NOTIFY;
-        }
+        default:
+            return ATLAS_ERR_UNKNOWN_EVENT;
     }
 }
 
-error_t kinematics_manager_process(kinematics_manager_t* manager)
+atlas_err_t kinematics_manager_process(kinematics_manager_t* manager)
 {
     assert(manager);
 
     kinematics_notify_t notify;
     if (kinematics_manager_receive_kinematics_notify(&notify)) {
-        RET_ON_ERROR(kinematics_manager_notify_handler(manager, notify));
+        ATLAS_RET_ON_ERR(kinematics_manager_notify_handler(manager, notify));
     }
 
     kinematics_event_t event;
     if (kinematics_manager_receive_kinematics_event(&event)) {
-        RET_ON_ERROR(kinematics_manager_event_handler(manager, &event));
+        ATLAS_RET_ON_ERR(kinematics_manager_event_handler(manager, &event));
     }
 
-    return ERROR_OK;
+    return ATLAS_ERR_OK;
 }
 
-error_t kinematics_manager_initialize(kinematics_manager_t* manager)
+atlas_err_t kinematics_manager_initialize(kinematics_manager_t* manager)
 {
     assert(manager);
 
@@ -178,5 +170,5 @@ error_t kinematics_manager_initialize(kinematics_manager_t* manager)
 
     kinematics_manager_event_start_handler(manager, NULL);
 
-    return ERROR_OK;
+    return ATLAS_ERR_OK;
 }

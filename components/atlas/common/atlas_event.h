@@ -1,7 +1,7 @@
 #ifndef COMMON_EVENT_H
 #define COMMON_EVENT_H
 
-#include "config.h"
+#include "atlas_config.h"
 
 typedef enum {
     JOINT_EVENT_TYPE_START,

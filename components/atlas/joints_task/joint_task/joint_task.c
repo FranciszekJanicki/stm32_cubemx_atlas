@@ -16,7 +16,7 @@ static void joint_task_func(void* task_param)
     joint_manager_initialize(&joint_ctx->manager, &joint_ctx->config);
 
     while (1) {
-        LOG_ON_ERROR(TAG, joint_manager_process(&joint_ctx->manager));
+        ATLAS_LOG_ON_ERR(TAG, joint_manager_process(&joint_ctx->manager));
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
