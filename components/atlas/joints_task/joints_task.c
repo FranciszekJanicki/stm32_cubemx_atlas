@@ -34,7 +34,8 @@ static joint_ctx_t joint_ctxs[JOINT_NUM] = {
                                 .min_angle = 0.0F,
                                 .max_angle = 359.0F,
                                 .min_speed = 10.0F,
-                                .max_speed = 500.0F}}};
+                                .max_speed = 500.0F,
+                                .num = JOINT_NUM_1}}};
 
 static joints_manager_t joints_manager = {.delta_timer = &htim2};
 

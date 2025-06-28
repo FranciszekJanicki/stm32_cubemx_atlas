@@ -44,12 +44,7 @@ static inline cartesian_space_t kinematics_manager_joint_space_to_cartesian_spac
 static inline joint_space_t kinematics_manager_cartesian_space_to_joint_space(
     cartesian_space_t const* cartesian_space)
 {
-    return (joint_space_t){.joint_position = {[JOINT_NUM_1] = 10.0F,
-                                              [JOINT_NUM_2] = 10.0F,
-                                              [JOINT_NUM_3] = 10.0F,
-                                              [JOINT_NUM_4] = 10.0F,
-                                              [JOINT_NUM_5] = 10.0F,
-                                              [JOINT_NUM_6] = 10.0F}};
+    return (joint_space_t){.joint_position = {10.0F, 10.0F, 10.0F, 10.0F, 10.0F, 10.0F}};
 }
 
 static atlas_err_t kinematics_manager_event_start_handler(
@@ -63,11 +58,11 @@ static atlas_err_t kinematics_manager_event_start_handler(
     }
 
     joints_event_t event = {.type = JOINTS_EVENT_TYPE_START};
-    // if (manager->is_joints_ready) {
-    if (!kinematics_manager_send_joints_event(&event)) {
-        return ATLAS_ERR_FAIL;
+    if (manager->is_joints_ready) {
+        if (!kinematics_manager_send_joints_event(&event)) {
+            return ATLAS_ERR_FAIL;
+        }
     }
-    // }
 
     manager->is_running = true;
 
@@ -159,10 +154,7 @@ static atlas_err_t kinematics_manager_notify_joints_ready_handler(kinematics_man
 
     manager->is_joints_ready = true;
 
-    joints_event_t event = {.type = JOINTS_EVENT_TYPE_START};
-    if (!kinematics_manager_send_joints_event(&event)) {
-        return ATLAS_ERR_FAIL;
-    }
+    kinematics_manager_event_start_handler(manager, NULL);
 
     return ATLAS_ERR_OK;
 }
@@ -208,9 +200,9 @@ atlas_err_t kinematics_manager_process(kinematics_manager_t* manager)
         RET_ON_ERR(kinematics_manager_event_handler(manager, &event));
     }
 
-    // test purposes only
-    vTaskDelay(100);
-    kinematics_manager_event_inverse_handler(manager, NULL);
+    // // test purposes only
+    // vTaskDelay(100);
+    // kinematics_manager_event_inverse_handler(manager, NULL);
 
     return ATLAS_ERR_OK;
 }
@@ -221,8 +213,6 @@ atlas_err_t kinematics_manager_initialize(kinematics_manager_t* manager)
 
     manager->is_running = false;
     manager->is_joints_ready = false;
-
-    kinematics_manager_event_start_handler(manager, NULL);
 
     return ATLAS_ERR_OK;
 }

@@ -25,12 +25,12 @@ static void uart_task_func(void*)
             xStreamBufferReceive(stream_buffer_manager_get(STREAM_BUFFER_TYPE_UART),
                                  buffer,
                                  sizeof(buffer),
-                                 pdMS_TO_TICKS(100));
+                                 pdMS_TO_TICKS(10));
 
-        HAL_UART_Transmit(&huart2, buffer, bytes_received, 100);
+        HAL_UART_Transmit(&huart2, buffer, bytes_received, 10);
         memset(buffer, 0, sizeof(buffer));
 
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
