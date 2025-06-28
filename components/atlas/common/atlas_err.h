@@ -1,5 +1,5 @@
-#ifndef ATLAS_COMMON_ATLAS_ERR_H
-#define ATLAS_COMMON_ATLAS_ERR_H
+#ifndef ATLAS_COMMON_ERR_H
+#define ATLAS_COMMON_ERR_H
 
 typedef enum {
     ATLAS_ERR_OK,
@@ -12,4 +12,4 @@ typedef enum {
 
 char const* atlas_err_to_string(atlas_err_t err);
 
-#endif // ATLAS_COMMON_ATLAS_ERR_H
+#endif // ATLAS_COMMON_ERR_H

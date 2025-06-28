@@ -24,13 +24,12 @@ int main(void)
     HAL_Delay(500);
 
     uart_stream_buffer_initialize();
-    uart_task_initialize();
-
     joints_queue_initialize();
-    joints_task_initialize();
-
     kinematics_queue_initialize();
+
     kinematics_task_initialize();
+    uart_task_initialize();
+    joints_task_initialize();
 
     vTaskStartScheduler();
 }
@@ -39,15 +38,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
     if (htim->Instance == TIM4) {
         HAL_IncTick();
+    } else if (htim->Instance == TIM2) {
+        BaseType_t task_woken = pdFALSE;
+
+        xTaskNotifyFromISR(task_manager_get(TASK_TYPE_JOINTS),
+                           JOINTS_NOTIFY_DELTA_TIMER,
+                           eSetBits,
+                           &task_woken);
+
+        portYIELD_FROM_ISR(task_woken);
     }
-    // else if (htim->Instance == TIM2) {
-    //     BaseType_t task_woken = pdFALSE;
-
-    //     xTaskNotifyFromISR(task_manager_get(TASK_TYPE_JOINTS),
-    //                        JOINTS_NOTIFY_DELTA_TIMER,
-    //                        eSetBits,
-    //                        &task_woken);
-
-    //     portYIELD_FROM_ISR(task_woken);
-    // }
 }

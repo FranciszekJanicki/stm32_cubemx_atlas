@@ -8,10 +8,13 @@
 #include "step_motor.h"
 #include "stm32l4xx_hal.h"
 #include "task.h"
+#include "task_manager.h"
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+
+static char const* const TAG = "joint_manager";
 
 static bool frequency_to_prescaler_and_period(uint32_t frequency,
                                               uint32_t clock_hz,
@@ -150,7 +153,7 @@ static motor_driver_err_t motor_driver_fault_get_current(void* user, float32_t* 
 {
     joint_manager_t* manager = (joint_manager_t*)user;
 
-    *current = 1.F;
+    *current = 1.0F;
 
     return MOTOR_DRIVER_ERR_OK;
 }
@@ -158,6 +161,11 @@ static motor_driver_err_t motor_driver_fault_get_current(void* user, float32_t* 
 static inline bool joint_manager_has_joint_event(QueueHandle_t queue)
 {
     return uxQueueMessagesWaiting(queue);
+}
+
+static inline bool joint_manager_send_joints_notify(joints_notify_t notify)
+{
+    return xTaskNotify(task_manager_get(TASK_TYPE_JOINTS), (uint32_t)notify, eSetBits) == pdTRUE;
 }
 
 static inline bool joint_manager_receive_joint_event(QueueHandle_t queue, joint_event_t* event)
@@ -171,33 +179,27 @@ static inline bool joint_manager_receive_joint_notify(joint_notify_t* notify)
 }
 
 static atlas_err_t joint_manager_event_start_handler(joint_manager_t* manager,
-                                                     joint_event_payload_t const* payload)
+                                                     joint_event_payload_start_t const* payload)
 {
-    printf("joint_manager_event_start_handler\n\r");
+    ATLAS_LOG(TAG, "joint_manager_event_start_handler");
 
     if (manager->is_running) {
         return ATLAS_ERR_ALREADY_RUNNING;
     }
 
-    HAL_TIM_Base_Start_IT(manager->delta_timer);
-    HAL_TIM_PWM_Start_IT(manager->pwm_timer, manager->pwm_channel);
-
-    manager->position = payload->start.position;
     manager->is_running = true;
 
     return ATLAS_ERR_OK;
 }
 
-static atlas_err_t joint_manager_event_stop_handler(joint_manager_t* manager)
+static atlas_err_t joint_manager_event_stop_handler(joint_manager_t* manager,
+                                                    joint_event_payload_stop_t const* payload)
 {
-    printf("joint_manager_event_stop_handler\n\r");
+    ATLAS_LOG(TAG, "joint_manager_event_stop_handler");
 
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
     }
-
-    HAL_TIM_Base_Stop_IT(manager->delta_timer);
-    HAL_TIM_PWM_Stop_IT(manager->pwm_timer, manager->pwm_channel);
 
     manager->is_running = false;
 
@@ -205,35 +207,36 @@ static atlas_err_t joint_manager_event_stop_handler(joint_manager_t* manager)
 }
 
 static atlas_err_t joint_manager_event_update_handler(joint_manager_t* manager,
-                                                      joint_event_payload_t const* payload)
+                                                      joint_event_payload_update_t const* update)
 {
-    printf("joint_manager_event_update_handler\n\r");
+    ATLAS_LOG(TAG, "joint_manager_event_update_handler");
 
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
     }
 
-    manager->position = payload->update.position;
+    manager->position = update->position;
+    manager->delta_time = update->delta_time;
 
     return ATLAS_ERR_OK;
 }
 
 static atlas_err_t joint_manager_notify_delta_timer_handler(joint_manager_t* manager)
 {
-    printf("joint_manager_notify_delta_timer_handler\n\r");
+    ATLAS_LOG(TAG, "joint_manager_notify_delta_timer_handler");
 
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
     }
 
-    motor_driver_set_position(&manager->driver, manager->position, JOINTS_DELTA_TIMER_TIMEOUT_S);
+    motor_driver_set_position(&manager->driver, manager->position, manager->delta_time);
 
     return ATLAS_ERR_OK;
 }
 
 static atlas_err_t joint_manager_notify_pwm_pulse_handler(joint_manager_t* manager)
 {
-    printf("joint_manager_notify_pwm_pulse_handler\n\r");
+    ATLAS_LOG(TAG, "joint_manager_notify_pwm_pulse_handler");
 
     if (!manager->is_running) {
         return ATLAS_ERR_NOT_RUNNING;
@@ -247,34 +250,33 @@ static atlas_err_t joint_manager_notify_pwm_pulse_handler(joint_manager_t* manag
 static atlas_err_t joint_manager_notify_handler(joint_manager_t* manager, joint_notify_t notify)
 {
     if (notify & JOINT_NOTIFY_DELTA_TIMER) {
-        atlas_err_t err = joint_manager_notify_delta_timer_handler(manager);
-        if (err != ATLAS_ERR_OK) {
-            return err;
-        }
+        ATLAS_RET_ON_ERR(joint_manager_notify_delta_timer_handler(manager));
     }
-
     if (notify & JOINT_NOTIFY_PWM_PULSE) {
-        return joint_manager_notify_pwm_pulse_handler(manager);
+        ATLAS_RET_ON_ERR(joint_manager_notify_pwm_pulse_handler(manager));
+    } else {
+        return ATLAS_ERR_UNKNOWN_NOTIFY;
     }
 
-    return ATLAS_ERR_UNKNOWN_NOTIFY;
+    return ATLAS_ERR_OK;
 }
 
 static atlas_err_t joint_manager_event_handler(joint_manager_t* manager, joint_event_t const* event)
 {
     switch (event->type) {
         case JOINT_EVENT_TYPE_START: {
-            return joint_manager_event_start_handler(manager, &event->payload);
+            return joint_manager_event_start_handler(manager, &event->payload.start);
         }
         case JOINT_EVENT_TYPE_STOP: {
-            return joint_manager_event_stop_handler(manager);
+            return joint_manager_event_stop_handler(manager, &event->payload.stop);
         }
         case JOINT_EVENT_TYPE_UPDATE: {
-            return joint_manager_event_update_handler(manager, &event->payload);
+            return joint_manager_event_update_handler(manager, &event->payload.update);
+        }
+        default: {
+            return ATLAS_ERR_UNKNOWN_EVENT;
         }
     }
-
-    return ATLAS_ERR_UNKNOWN_EVENT;
 }
 
 atlas_err_t joint_manager_process(joint_manager_t* manager)
@@ -285,21 +287,13 @@ atlas_err_t joint_manager_process(joint_manager_t* manager)
 
     joint_notify_t notify;
     if (joint_manager_receive_joint_notify(&notify)) {
-        err = joint_manager_notify_handler(manager, notify);
-        if (err != ATLAS_ERR_OK) {
-            printf("joint_manager_notify_handler: %s\n\r", atlas_err_to_string(err));
-            return err;
-        }
+        ATLAS_RET_ON_ERR(joint_manager_notify_handler(manager, notify));
     }
 
     joint_event_t event;
     while (joint_manager_has_joint_event(manager->joint_queue)) {
         if (joint_manager_receive_joint_event(manager->joint_queue, &event)) {
-            err = joint_manager_event_handler(manager, &event);
-            if (err != ATLAS_ERR_OK) {
-                printf("joint_manager_event_handler: %s\n\r", atlas_err_to_string(err));
-                return err;
-            }
+            ATLAS_RET_ON_ERR(joint_manager_event_handler(manager, &event));
         }
     }
 
@@ -356,6 +350,8 @@ atlas_err_t joint_manager_initialize(joint_manager_t* manager, joint_config_t co
                                     .regulator_get_control = motor_driver_regulator_get_control,
                                     .fault_user = manager,
                                     .fault_get_current = motor_driver_fault_get_current});
+
+    joint_manager_send_joints_notify(JOINTS_NOTIFY_JOINT_READY ^ ~(1 << config->num));
 
     return ATLAS_ERR_OK;
 }

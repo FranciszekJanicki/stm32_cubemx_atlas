@@ -11,21 +11,62 @@
 #include <stdint.h>
 #include <stdio.h>
 
+static char const* const TAG = "joints_task";
+
 #define JOINTS_TASK_STACK_DEPTH (4096U / sizeof(StackType_t))
-#define JOINTS_TASK_PRIORITY (1U)
+#define JOINTS_TASK_PRIORITY (2U)
 
 #define JOINTS_QUEUE_ITEMS (10U)
 #define JOINTS_QUEUE_ITEM_SIZE (sizeof(joints_event_t))
 #define JOINTS_QUEUE_STORAGE_SIZE (JOINTS_QUEUE_ITEMS * JOINTS_QUEUE_ITEM_SIZE)
 
+static joint_task_ctx_t joint_task_ctxs[JOINT_NUM] = {
+    [JOINT_NUM_1] = {.manager = {.pwm_timer = &htim1,
+                                 .pwm_channel = TIM_CHANNEL_4,
+                                 .dir_pin = GPIO_PIN_10,
+                                 .dir_port = GPIOA},
+                     .config = {.kp = 10.0F,
+                                .ki = 0.0F,
+                                .kd = 0.0F,
+                                .kc = 0.0F,
+                                .min_angle = 0.0F,
+                                .max_angle = 359.0F,
+                                .min_speed = 10.0F,
+                                .max_speed = 500.0F}}};
+
+static joints_manager_t joints_manager = {.delta_timer = &htim2};
+
 static void joints_task_func(void*)
 {
-    joints_manager_t joints_manager;
     joints_manager_initialize(&joints_manager);
 
     while (1) {
-        joints_manager_process(&joints_manager);
+        ATLAS_LOG_ON_ERR(TAG, joints_manager_process(&joints_manager));
         vTaskDelay(pdMS_TO_TICKS(10));
+    }
+}
+
+static StackType_t joint_task_stacks[JOINT_NUM][JOINT_TASK_STACK_DEPTH];
+static StaticTask_t joint_task_buffers[JOINT_NUM];
+
+static uint8_t joint_queue_storages[JOINT_NUM][JOINT_QUEUE_STORAGE_SIZE];
+static StaticQueue_t joint_queue_buffers[JOINT_NUM];
+
+void joint_tasks_initialize(void)
+{
+    for (joint_num_t num = 0; num < JOINT_NUM; ++num) {
+        joints_manager.joint_ctxs[num].task = joint_task_initialize(&joint_task_ctxs[num],
+                                                                    &joint_task_buffers[num],
+                                                                    &joint_task_stacks[num]);
+    }
+}
+
+void joint_queues_initialize(void)
+{
+    for (joint_num_t num = 0; num < JOINT_NUM; ++num) {
+        joints_manager.joint_ctxs[num].queue = joint_queue_initialize(&joint_task_ctxs[num],
+                                                                      &joint_queue_buffers[num],
+                                                                      &joint_queue_storages[num]);
     }
 }
 
@@ -43,6 +84,8 @@ void joints_task_initialize(void)
                                                  &joints_task_buffer);
 
     task_manager_set(TASK_TYPE_JOINTS, joints_task);
+
+    joint_tasks_initialize();
 }
 
 void joints_queue_initialize(void)
@@ -56,6 +99,8 @@ void joints_queue_initialize(void)
                                                     &joints_queue_buffer);
 
     queue_manager_set(QUEUE_TYPE_JOINTS, joints_queue);
+
+    joint_queues_initialize();
 }
 
 #undef JOINTS_TASK_STACK_DEPTH

@@ -6,23 +6,20 @@
 #include "atlas_err.h"
 #include "queue.h"
 #include "task.h"
+#include "tim.h"
 #include <stdbool.h>
 
 typedef struct {
     bool is_running;
 
+    TIM_HandleTypeDef* delta_timer;
+
     struct {
         TaskHandle_t task;
         QueueHandle_t queue;
+        bool is_ready;
     } joint_ctxs[JOINT_NUM];
 } joints_manager_t;
-
-typedef struct {
-    struct {
-        TaskHandle_t task;
-        QueueHandle_t queue;
-    } joint_ctxs[JOINT_NUM];
-} joints_config_t;
 
 atlas_err_t joints_manager_initialize(joints_manager_t* manager);
 atlas_err_t joints_manager_process(joints_manager_t* manager);

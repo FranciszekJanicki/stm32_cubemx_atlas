@@ -10,7 +10,6 @@ typedef enum {
 } joint_event_type_t;
 
 typedef struct {
-    float position;
 } joint_event_payload_start_t;
 
 typedef struct {
@@ -18,6 +17,7 @@ typedef struct {
 
 typedef struct {
     float position;
+    float delta_time;
 } joint_event_payload_update_t;
 
 typedef union {
@@ -38,7 +38,6 @@ typedef enum {
 } joints_event_type_t;
 
 typedef struct {
-    float positions[JOINT_NUM];
 } joints_event_payload_start_t;
 
 typedef struct {
@@ -62,6 +61,7 @@ typedef struct {
 typedef enum {
     KINEMATICS_EVENT_TYPE_START,
     KINEMATICS_EVENT_TYPE_STOP,
+    KINEMATICS_EVENT_TYPE_UPDATE,
 } kinematics_event_type_t;
 
 typedef struct {
@@ -70,9 +70,19 @@ typedef struct {
 typedef struct {
 } kinematics_event_payload_stop_t;
 
+typedef struct {
+    float position_x;
+    float position_y;
+    float position_z;
+    float orientation_x;
+    float orientation_y;
+    float orientation_z;
+} kinematics_event_payload_update_t;
+
 typedef union {
     kinematics_event_payload_start_t start;
     kinematics_event_payload_stop_t stop;
+    kinematics_event_payload_update_t update;
 } kinematics_event_payload_t;
 
 typedef struct {

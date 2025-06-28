@@ -3,6 +3,7 @@
 
 #include "FreeRTOS.h"
 #include "a4988.h"
+#include "atlas_config.h"
 #include "atlas_err.h"
 #include "motor_driver.h"
 #include "pid_regulator.h"
@@ -15,6 +16,7 @@
 
 typedef struct {
     float32_t position;
+    float32_t delta_time;
     bool is_running;
 
     a4988_t a4988;
@@ -24,11 +26,11 @@ typedef struct {
 
     GPIO_TypeDef* dir_port;
     uint32_t dir_pin;
-    TIM_HandleTypeDef* delta_timer;
     TIM_HandleTypeDef* pwm_timer;
     uint32_t pwm_channel;
 
     QueueHandle_t joint_queue;
+    TaskHandle_t joint_task;
 } joint_manager_t;
 
 typedef struct {
@@ -40,6 +42,7 @@ typedef struct {
     float32_t max_angle;
     float32_t min_speed;
     float32_t max_speed;
+    joint_num_t num;
 } joint_config_t;
 
 atlas_err_t joint_manager_initialize(joint_manager_t* manager, joint_config_t const* config);

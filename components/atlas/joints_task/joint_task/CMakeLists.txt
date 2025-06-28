@@ -16,6 +16,7 @@ target_link_libraries(joint_task PUBLIC
     pid_regulator
     stm32cubemx
     common
+    task_manager
 )
 
 target_compile_options(joint_task PUBLIC
