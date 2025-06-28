@@ -1,7 +1,7 @@
 #ifndef JOINT_TASK_JOINT_TASK_H
 #define JOINT_TASK_JOINT_TASK_H
 
-#include "atlas_event.h"
+#include "event.h"
 #include "joint_manager.h"
 
 #define JOINT_TASK_STACK_DEPTH (4096U / sizeof(StackType_t))
@@ -14,13 +14,13 @@
 typedef struct {
     joint_manager_t manager;
     joint_config_t config;
-} joint_task_ctx_t;
+} joint_ctx_t;
 
-TaskHandle_t joint_task_initialize(joint_task_ctx_t* task_ctx,
+TaskHandle_t joint_task_initialize(joint_ctx_t* joint_ctx,
                                    StaticTask_t* task_buffer,
                                    StackType_t (*task_stack)[JOINT_TASK_STACK_DEPTH]);
 
-QueueHandle_t joint_queue_initialize(joint_task_ctx_t* task_ctx,
+QueueHandle_t joint_queue_initialize(joint_ctx_t* joint_ctx,
                                      StaticQueue_t* queue_buffer,
                                      uint8_t (*queue_storage)[JOINT_QUEUE_STORAGE_SIZE]);
 

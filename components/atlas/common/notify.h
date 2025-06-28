@@ -1,7 +1,7 @@
-#ifndef ATLAS_COMMON_ATLAS_NOTIFY_H
-#define ATLAS_COMMON_ATLAS_NOTIFY_H
+#ifndef COMMON_NOTIFY_H
+#define COMMON_NOTIFY_H
 
-#include "atlas_config.h"
+#include "config.h"
 
 typedef enum {
     JOINT_NOTIFY_DELTA_TIMER = (1 << 0),
@@ -21,4 +21,4 @@ typedef enum {
     KINEMATICS_NOTIFY_ALL = (KINEMATICS_NOTIFY_JOINTS_READY),
 } kinematics_notify_t;
 
-#endif // ATLAS_COMMON_ATLAS_NOTIFY_H
+#endif // COMMON_NOTIFY_H

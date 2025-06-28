@@ -1,5 +1,5 @@
 #include "FreeRTOS.h"
-#include "atlas_config.h"
+#include "config.h"
 #include "stdio.h"
 #include "stream_buffer.h"
 #include "stream_buffer_manager.h"

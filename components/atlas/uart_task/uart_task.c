@@ -1,6 +1,6 @@
 #include "uart_task.h"
 #include "FreeRTOS.h"
-#include "atlas_config.h"
+#include "config.h"
 #include "stream_buffer.h"
 #include "stream_buffer_manager.h"
 #include "task.h"
@@ -17,7 +17,6 @@
 
 static void uart_task_func(void*)
 {
-#ifdef DEBUG
     static uint8_t buffer[100];
     memset(buffer, 0, sizeof(buffer));
 
@@ -33,7 +32,6 @@ static void uart_task_func(void*)
 
         vTaskDelay(pdMS_TO_TICKS(10));
     }
-#endif
 }
 
 void uart_task_initialize(void)

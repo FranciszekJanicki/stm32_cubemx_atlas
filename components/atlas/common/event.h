@@ -1,7 +1,7 @@
-#ifndef ATLAS_COMMON_ATLAS_EVENT_H
-#define ATLAS_COMMON_ATLAS_EVENT_H
+#ifndef COMMON_EVENT_H
+#define COMMON_EVENT_H
 
-#include "atlas_config.h"
+#include "config.h"
 
 typedef enum {
     JOINT_EVENT_TYPE_START,
@@ -71,12 +71,8 @@ typedef struct {
 } kinematics_event_payload_stop_t;
 
 typedef struct {
-    float position_x;
-    float position_y;
-    float position_z;
-    float orientation_x;
-    float orientation_y;
-    float orientation_z;
+    float position_x, position_y, position_z;
+    float orientation_x, orientation_y, orientation_z;
 } kinematics_event_payload_update_t;
 
 typedef union {
@@ -90,4 +86,4 @@ typedef struct {
     kinematics_event_payload_t payload;
 } kinematics_event_t;
 
-#endif // ATLAS_COMMON_ATLAS_EVENT_H
+#endif // COMMON_EVENT_H

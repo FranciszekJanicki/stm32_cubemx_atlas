@@ -1,5 +1,5 @@
-#ifndef ATLAS_STREAM_BUFFER_MANAGER_STREAM_BUFFER_MANAGER_H
-#define ATLAS_STREAM_BUFFER_MANAGER_STREAM_BUFFER_MANAGER_H
+#ifndef STREAM_BUFFER_MANAGER_STREAM_BUFFER_MANAGER_H
+#define STREAM_BUFFER_MANAGER_STREAM_BUFFER_MANAGER_H
 
 #include "FreeRTOS.h"
 #include "stream_buffer.h"
@@ -13,4 +13,4 @@ typedef enum {
 void stream_buffer_manager_set(StreamBufferType_t type, StreamBufferHandle_t stream_buffer);
 StreamBufferHandle_t stream_buffer_manager_get(StreamBufferType_t type);
 
-#endif // ATLAS_STREAM_BUFFER_MANAGER_STREAM_BUFFER_MANAGER_H
+#endif // STREAM_BUFFER_MANAGER_STREAM_BUFFER_MANAGER_H

@@ -1,9 +1,9 @@
-#ifndef ATLAS_UART_TASK_UART_TASK_H
-#define ATLAS_UART_TASK_UART_TASK_H
+#ifndef UART_TASK_UART_TASK_H
+#define UART_TASK_UART_TASK_H
 
-#include "atlas_err.h"
+#include "err.h"
 
 void uart_task_initialize(void);
 void uart_stream_buffer_initialize(void);
 
-#endif // ATLAS_UART_TASK_UART_TASK_H
+#endif // UART_TASK_UART_TASK_H

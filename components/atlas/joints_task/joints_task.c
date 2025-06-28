@@ -20,7 +20,7 @@ static char const* const TAG = "joints_task";
 #define JOINTS_QUEUE_ITEM_SIZE (sizeof(joints_event_t))
 #define JOINTS_QUEUE_STORAGE_SIZE (JOINTS_QUEUE_ITEMS * JOINTS_QUEUE_ITEM_SIZE)
 
-static joint_task_ctx_t joint_task_ctxs[JOINT_NUM] = {
+static joint_ctx_t joint_ctxs[JOINT_NUM] = {
     [JOINT_NUM_1] = {.manager = {.pwm_timer = &htim1,
                                  .pwm_channel = TIM_CHANNEL_4,
                                  .dir_pin = GPIO_PIN_10,
@@ -41,21 +41,18 @@ static void joints_task_func(void*)
     joints_manager_initialize(&joints_manager);
 
     while (1) {
-        ATLAS_LOG_ON_ERR(TAG, joints_manager_process(&joints_manager));
+        LOG_ON_ERROR(TAG, joints_manager_process(&joints_manager));
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
-static StackType_t joint_task_stacks[JOINT_NUM][JOINT_TASK_STACK_DEPTH];
-static StaticTask_t joint_task_buffers[JOINT_NUM];
-
-static uint8_t joint_queue_storages[JOINT_NUM][JOINT_QUEUE_STORAGE_SIZE];
-static StaticQueue_t joint_queue_buffers[JOINT_NUM];
-
 void joint_tasks_initialize(void)
 {
-    for (joint_num_t num = 0; num < JOINT_NUM; ++num) {
-        joints_manager.joint_ctxs[num].task = joint_task_initialize(&joint_task_ctxs[num],
+    static StackType_t joint_task_stacks[JOINT_NUM][JOINT_TASK_STACK_DEPTH];
+    static StaticTask_t joint_task_buffers[JOINT_NUM];
+
+    for (uint8_t num = 0; num < JOINT_NUM; ++num) {
+        joints_manager.joint_ctxs[num].task = joint_task_initialize(&joint_ctxs[num],
                                                                     &joint_task_buffers[num],
                                                                     &joint_task_stacks[num]);
     }
@@ -63,8 +60,11 @@ void joint_tasks_initialize(void)
 
 void joint_queues_initialize(void)
 {
-    for (joint_num_t num = 0; num < JOINT_NUM; ++num) {
-        joints_manager.joint_ctxs[num].queue = joint_queue_initialize(&joint_task_ctxs[num],
+    static uint8_t joint_queue_storages[JOINT_NUM][JOINT_QUEUE_STORAGE_SIZE];
+    static StaticQueue_t joint_queue_buffers[JOINT_NUM];
+
+    for (uint8_t num = 0; num < JOINT_NUM; ++num) {
+        joints_manager.joint_ctxs[num].queue = joint_queue_initialize(&joint_ctxs[num],
                                                                       &joint_queue_buffers[num],
                                                                       &joint_queue_storages[num]);
     }

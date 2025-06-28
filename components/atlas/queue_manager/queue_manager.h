@@ -1,5 +1,5 @@
-#ifndef ATLAS_QUEUE_MANAGER_QUEUE_MANAGER_H
-#define ATLAS_QUEUE_MANAGER_QUEUE_MANAGER_H
+#ifndef QUEUE_MANAGER_QUEUE_MANAGER_H
+#define QUEUE_MANAGER_QUEUE_MANAGER_H
 
 #include "FreeRTOS.h"
 #include "queue.h"
@@ -14,4 +14,4 @@ typedef enum {
 void queue_manager_set(QueueType_t type, QueueHandle_t queue);
 QueueHandle_t queue_manager_get(QueueType_t type);
 
-#endif // ATLAS_QUEUE_MANAGER_QUEUE_MANAGER_H
+#endif // QUEUE_MANAGER_QUEUE_MANAGER_H

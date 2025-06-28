@@ -1,5 +1,5 @@
-#ifndef ATLAS_TASK_MANAGER_TASK_MANAGER_H
-#define ATLAS_TASK_MANAGER_TASK_MANAGER_H
+#ifndef TASK_MANAGER_TASK_MANAGER_H
+#define TASK_MANAGER_TASK_MANAGER_H
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -15,4 +15,4 @@ typedef enum {
 void task_manager_set(TaskType_t type, TaskHandle_t task);
 TaskHandle_t task_manager_get(TaskType_t type);
 
-#endif // ATLAS_TASK_MANAGER_TASK_MANAGER_H
+#endif // TASK_MANAGER_TASK_MANAGER_H
