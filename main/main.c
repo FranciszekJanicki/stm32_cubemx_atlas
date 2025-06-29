@@ -18,12 +18,15 @@ int main(void)
     MX_USART2_UART_Init();
     MX_TIM1_Init();
     MX_TIM2_Init();
+    MX_TIM3_Init();
 
     HAL_Delay(200);
 
     uart_stream_buffer_initialize();
     joints_queue_initialize();
     kinematics_queue_initialize();
+
+    HAL_TIM_Base_Start_IT(&htim3);
 
     joints_task_initialize();
     uart_task_initialize();

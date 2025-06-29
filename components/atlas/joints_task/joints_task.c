@@ -160,16 +160,14 @@ void joints_queue_initialize(void)
     joint_queues_initialize();
 }
 
-void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
+void joint_pwm_pulse_callback(void)
 {
     BaseType_t task_woken = pdFALSE;
 
-    if (htim->Instance == TIM1) {
-        xTaskNotifyFromISR(joints_manager.joint_ctxs[JOINT_NUM_1].task,
-                           JOINT_NOTIFY_PWM_PULSE,
-                           eSetBits,
-                           &task_woken);
-    }
+    xTaskNotifyFromISR(joints_manager.joint_ctxs[JOINT_NUM_1].task,
+                       JOINT_NOTIFY_PWM_PULSE,
+                       eSetBits,
+                       &task_woken);
 
     portYIELD_FROM_ISR(task_woken);
 }

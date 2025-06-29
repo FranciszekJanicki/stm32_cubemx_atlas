@@ -4,6 +4,7 @@
 #include "atlas_notify.h"
 #include "atlas_utility.h"
 #include "task.h"
+#include "task_manager.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -57,7 +58,7 @@ static atlas_err_t uart_manager_notify_handler(uart_manager_t* manager, uart_not
 {
     ATLAS_ASSERT(manager);
 
-    if (notify & UART_NOTIFY_TX_CPLT) {
+    if (notify & UART_NOTIFY_TRANSMIT_CPLT) {
         ATLAS_RET_ON_ERR(uart_manager_notify_tx_cplt_handler(manager));
     }
 
@@ -86,4 +87,16 @@ atlas_err_t uart_manager_initialize(uart_manager_t* manager,
     manager->uart = uart;
 
     return uart_manager_notify_tx_cplt_handler(manager);
+}
+
+void uart_transmit_cplt_callback(void)
+{
+    BaseType_t task_woken = pdFALSE;
+
+    xTaskNotifyFromISR(task_manager_get(TASK_TYPE_UART),
+                       UART_NOTIFY_TRANSMIT_CPLT,
+                       eSetBits,
+                       &task_woken);
+
+    portYIELD_FROM_ISR(task_woken);
 }

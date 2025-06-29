@@ -231,15 +231,6 @@ atlas_err_t kinematics_manager_process(kinematics_manager_t* manager)
         }
     }
 
-    // vTaskDelay(100);
-    // ATLAS_LOG_ON_ERR(
-    //     TAG,
-    //     kinematics_manager_event_inverse_handler(
-    //         manager,
-    //         &(kinematics_event_payload_inverse_t){
-    //             .cartesian_space = {.tool_position = {.x = 100.0F, .y = 50.0F, .z = 25.0F},
-    //                                 .tool_orientation = {.x = 0.0F, .y = 0.0F, .z = 90.0F}}}));
-
     return ATLAS_ERR_OK;
 }
 
@@ -251,4 +242,15 @@ atlas_err_t kinematics_manager_initialize(kinematics_manager_t* manager)
     manager->is_joints_ready = false;
 
     return ATLAS_ERR_OK;
+}
+
+void kinematics_delta_timer_callback(void)
+{
+    BaseType_t task_woken = pdFALSE;
+
+    xQueueSendFromISR(queue_manager_get(QUEUE_TYPE_KINEMATICS),
+                      &(kinematics_event_t){.type = KINEMATICS_EVENT_TYPE_INVERSE},
+                      &task_woken);
+
+    portYIELD_FROM_ISR(task_woken);
 }

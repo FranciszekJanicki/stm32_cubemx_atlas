@@ -22,8 +22,8 @@ typedef enum {
 } kinematics_notify_t;
 
 typedef enum {
-    UART_NOTIFY_TX_CPLT = (1 << 0),
-    UART_NOTIFY_ALL = (UART_NOTIFY_TX_CPLT),
+    UART_NOTIFY_TRANSMIT_CPLT = (1 << 0),
+    UART_NOTIFY_ALL = (UART_NOTIFY_TRANSMIT_CPLT),
 } uart_notify_t;
 
 #endif // COMMON_ATLAS_NOTIFY_H
