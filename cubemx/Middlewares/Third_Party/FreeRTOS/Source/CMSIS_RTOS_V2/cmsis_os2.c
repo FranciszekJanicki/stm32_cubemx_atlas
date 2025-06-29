@@ -2439,7 +2439,11 @@ __WEAK void vApplicationDaemonTaskStartupHook (void){}
   Dummy implementation of the callback function vApplicationStackOverflowHook().
 */
 #if (configCHECK_FOR_STACK_OVERFLOW > 0)
-
+__WEAK void vApplicationStackOverflowHook (TaskHandle_t xTask, signed char *pcTaskName) {
+  (void)xTask;
+  (void)pcTaskName;
+  configASSERT(0);
+}
 #endif
 
 /*---------------------------------------------------------------------------*/

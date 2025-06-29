@@ -2,6 +2,7 @@ add_library(uart_task STATIC)
 
 target_sources(uart_task PRIVATE 
     uart_task.c
+    uart_manager.c
 )
 
 target_include_directories(uart_task PUBLIC

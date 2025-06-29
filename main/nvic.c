@@ -19,3 +19,17 @@ __attribute__((used)) void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim
 
     portYIELD_FROM_ISR(task_woken);
 }
+
+__attribute__((used)) void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart)
+{
+    BaseType_t task_woken = pdFALSE;
+
+    if (huart->Instance == USART2) {
+        xTaskNotifyFromISR(task_manager_get(TASK_TYPE_UART),
+                           UART_NOTIFY_TX_CPLT,
+                           eSetBits,
+                           &task_woken);
+    }
+
+    portYIELD_FROM_ISR(task_woken);
+}

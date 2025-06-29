@@ -14,7 +14,7 @@ static void joint_task_func(void* task_param)
 {
     joint_ctx_t* joint_ctx = (joint_ctx_t*)task_param;
 
-    joint_manager_initialize(&joint_ctx->manager, &joint_ctx->config);
+    ATLAS_LOG_ON_ERR(TAG, joint_manager_initialize(&joint_ctx->manager, &joint_ctx->config));
 
     while (1) {
         ATLAS_LOG_ON_ERR(TAG, joint_manager_process(&joint_ctx->manager));
