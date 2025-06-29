@@ -13,6 +13,11 @@
 
 static char const* const TAG = "kinematics_manager";
 
+static inline bool kinematics_manager_has_kinematics_event()
+{
+    return uxQueueMessagesWaiting(queue_manager_get(QUEUE_TYPE_KINEMATICS));
+}
+
 static inline bool kinematics_manager_send_joints_event(joints_event_t const* event)
 {
     ATLAS_ASSERT(event);
@@ -220,19 +225,20 @@ atlas_err_t kinematics_manager_process(kinematics_manager_t* manager)
     }
 
     kinematics_event_t event;
-    if (kinematics_manager_receive_kinematics_event(&event)) {
-        ATLAS_RET_ON_ERR(kinematics_manager_event_handler(manager, &event));
+    while (kinematics_manager_has_kinematics_event()) {
+        if (kinematics_manager_receive_kinematics_event(&event)) {
+            ATLAS_RET_ON_ERR(kinematics_manager_event_handler(manager, &event));
+        }
     }
 
-    // test purposes only
-    vTaskDelay(100);
-    ATLAS_LOG_ON_ERR(
-        TAG,
-        kinematics_manager_event_inverse_handler(
-            manager,
-            &(kinematics_event_payload_inverse_t){
-                .cartesian_space = {.tool_position = {.x = 100.0F, .y = 50.0F, .z = 25.0F},
-                                    .tool_orientation = {.x = 0.0F, .y = 0.0F, .z = 90.0F}}}));
+    // vTaskDelay(100);
+    // ATLAS_LOG_ON_ERR(
+    //     TAG,
+    //     kinematics_manager_event_inverse_handler(
+    //         manager,
+    //         &(kinematics_event_payload_inverse_t){
+    //             .cartesian_space = {.tool_position = {.x = 100.0F, .y = 50.0F, .z = 25.0F},
+    //                                 .tool_orientation = {.x = 0.0F, .y = 0.0F, .z = 90.0F}}}));
 
     return ATLAS_ERR_OK;
 }

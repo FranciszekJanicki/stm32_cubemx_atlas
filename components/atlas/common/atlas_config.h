@@ -10,7 +10,7 @@ typedef enum {
     JOINT_NUM_4,
     JOINT_NUM_5,
     JOINT_NUM_6,
-    JOINT_NUM = 1,
+    JOINT_NUM,
 } joint_num_t;
 
 typedef float float32_t;

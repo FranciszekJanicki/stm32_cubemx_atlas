@@ -25,8 +25,8 @@ int main(void)
     joints_queue_initialize();
     kinematics_queue_initialize();
 
-    uart_task_initialize();
     joints_task_initialize();
+    uart_task_initialize();
     kinematics_task_initialize();
 
     vTaskStartScheduler();

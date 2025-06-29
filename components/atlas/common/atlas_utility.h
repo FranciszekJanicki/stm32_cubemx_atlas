@@ -46,6 +46,7 @@
     do {                                                                                    \
         if (!(EXPR)) {                                                                      \
             ATLAS_LOG("ASSERT", "%s: %d: Assertion failed: %s", __FILE__, __LINE__, #EXPR); \
+            vTaskDelay(100);                                                                \
             ATLAS_PANIC();                                                                  \
         }                                                                                   \
     } while (0)

@@ -14,6 +14,11 @@
 
 static char const* const TAG = "joints_manager";
 
+static inline bool joints_manager_has_joints_event()
+{
+    return uxQueueMessagesWaiting(queue_manager_get(QUEUE_TYPE_JOINTS));
+}
+
 static inline bool joints_manager_send_joint_event(QueueHandle_t queue, joint_event_t const* event)
 {
     ATLAS_ASSERT(queue);
@@ -123,17 +128,22 @@ static atlas_err_t joints_manager_event_update_handler(joints_manager_t* manager
 
     joint_event_t event = {.type = JOINT_EVENT_TYPE_UPDATE};
     for (uint8_t num = 0U; num < JOINT_NUM; ++num) {
-        // if (manager->joint_ctxs[num].position != payload->joint_space.joint_position[num]) {
-        event.payload.update.joint_position = payload->joint_space.joint_position[num];
-        event.payload.update.delta_time = JOINTS_DELTA_TIMER_TIMEOUT_S;
-        ATLAS_LOG(TAG, "joint position %u: %f", num, event.payload.update.joint_position);
+        if (manager->joint_ctxs[num].position != payload->joint_space.joint_position[num]) {
+            event.payload.update.joint_position = payload->joint_space.joint_position[num];
+            event.payload.update.delta_time = JOINTS_DELTA_TIMER_TIMEOUT_S;
+            ATLAS_LOG(TAG, "joint position %u: %f", num, event.payload.update.joint_position);
 
-        if (!joints_manager_send_joint_event(manager->joint_ctxs[num].queue, &event)) {
-            return ATLAS_ERR_FAIL;
+            if (!joints_manager_send_joint_event(manager->joint_ctxs[num].queue, &event)) {
+                return ATLAS_ERR_FAIL;
+            }
+
+            manager->joint_ctxs[num].position = payload->joint_space.joint_position[num];
+        } else {
+            ATLAS_LOG(TAG,
+                      "No change in joint position %u: %f",
+                      num,
+                      event.payload.update.joint_position);
         }
-
-        manager->joint_ctxs[num].position = payload->joint_space.joint_position[num];
-        // }
     }
 
     return ATLAS_ERR_OK;
@@ -148,10 +158,14 @@ static atlas_err_t joints_manager_notify_joint_ready_handler(joints_manager_t* m
 
     manager->joint_ctxs[num].is_ready = true;
 
+    ATLAS_LOG(TAG, "joint %d ready", num);
+
     if (joints_manager_all_joints_ready(manager)) {
         if (!joints_manager_send_kinematics_notify(KINEMATICS_NOTIFY_JOINTS_READY)) {
             return ATLAS_ERR_FAIL;
         }
+
+        ATLAS_LOG(TAG, "all joints ready");
     }
 
     return ATLAS_ERR_OK;
@@ -222,8 +236,10 @@ atlas_err_t joints_manager_process(joints_manager_t* manager)
     }
 
     joints_event_t event;
-    if (joints_manager_receive_joints_event(&event)) {
-        ATLAS_RET_ON_ERR(joints_manager_event_handler(manager, &event));
+    while (joints_manager_has_joints_event()) {
+        if (joints_manager_receive_joints_event(&event)) {
+            ATLAS_RET_ON_ERR(joints_manager_event_handler(manager, &event));
+        }
     }
 
     return ATLAS_ERR_OK;

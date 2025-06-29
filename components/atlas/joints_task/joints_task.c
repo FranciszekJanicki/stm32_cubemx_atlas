@@ -15,7 +15,7 @@
 static char const* const TAG = "joints_task";
 
 #define JOINTS_TASK_STACK_DEPTH (4096U / sizeof(StackType_t))
-#define JOINTS_TASK_PRIORITY (1U)
+#define JOINTS_TASK_PRIORITY (2U)
 
 #define JOINTS_QUEUE_ITEMS (10U)
 #define JOINTS_QUEUE_ITEM_SIZE (sizeof(joints_event_t))
@@ -34,7 +34,62 @@ static joint_ctx_t joint_ctxs[JOINT_NUM] = {
                                 .max_angle = 359.0F,
                                 .min_speed = 10.0F,
                                 .max_speed = 500.0F,
-                                .num = JOINT_NUM_1}}};
+                                .num = JOINT_NUM_1}},
+    [JOINT_NUM_2] =
+        {.manager = {.pwm_timer = NULL, .pwm_channel = 0x0000, .dir_pin = 0x0000, .dir_port = NULL},
+         .config = {.kp = 0.0F,
+                    .ki = 0.0F,
+                    .kd = 0.0F,
+                    .kc = 0.0F,
+                    .min_angle = 0.0F,
+                    .max_angle = 0.0F,
+                    .min_speed = 0.0F,
+                    .max_speed = 0.0F,
+                    .num = JOINT_NUM_2}},
+    [JOINT_NUM_3] =
+        {.manager = {.pwm_timer = NULL, .pwm_channel = 0x0000, .dir_pin = 0x0000, .dir_port = NULL},
+         .config = {.kp = 0.0F,
+                    .ki = 0.0F,
+                    .kd = 0.0F,
+                    .kc = 0.0F,
+                    .min_angle = 0.0F,
+                    .max_angle = 0.0F,
+                    .min_speed = 0.0F,
+                    .max_speed = 0.0F,
+                    .num = JOINT_NUM_3}},
+    [JOINT_NUM_4] =
+        {.manager = {.pwm_timer = NULL, .pwm_channel = 0x0000, .dir_pin = 0x0000, .dir_port = NULL},
+         .config = {.kp = 0.0F,
+                    .ki = 0.0F,
+                    .kd = 0.0F,
+                    .kc = 0.0F,
+                    .min_angle = 0.0F,
+                    .max_angle = 0.0F,
+                    .min_speed = 0.0F,
+                    .max_speed = 0.0F,
+                    .num = JOINT_NUM_4}},
+    [JOINT_NUM_5] =
+        {.manager = {.pwm_timer = NULL, .pwm_channel = 0x0000, .dir_pin = 0x0000, .dir_port = NULL},
+         .config = {.kp = 0.0F,
+                    .ki = 0.0F,
+                    .kd = 0.0F,
+                    .kc = 0.0F,
+                    .min_angle = 0.0F,
+                    .max_angle = 0.0F,
+                    .min_speed = 0.0F,
+                    .max_speed = 0.0F,
+                    .num = JOINT_NUM_5}},
+    [JOINT_NUM_6] = {
+        .manager = {.pwm_timer = NULL, .pwm_channel = 0x0000, .dir_pin = 0x0000, .dir_port = NULL},
+        .config = {.kp = 0.0F,
+                   .ki = 0.0F,
+                   .kd = 0.0F,
+                   .kc = 0.0F,
+                   .min_angle = 0.0F,
+                   .max_angle = 0.0F,
+                   .min_speed = 0.0F,
+                   .max_speed = 0.0F,
+                   .num = JOINT_NUM_6}}};
 
 static joints_manager_t joints_manager = {.delta_timer = &htim2};
 
@@ -74,8 +129,6 @@ void joint_queues_initialize(void)
 
 void joints_task_initialize(void)
 {
-    joint_tasks_initialize();
-
     static StaticTask_t joints_task_buffer;
     static StackType_t joints_task_stack[JOINTS_TASK_STACK_DEPTH];
 
@@ -88,12 +141,12 @@ void joints_task_initialize(void)
                                                  &joints_task_buffer);
 
     task_manager_set(TASK_TYPE_JOINTS, joints_task);
+
+    joint_tasks_initialize();
 }
 
 void joints_queue_initialize(void)
 {
-    joint_queues_initialize();
-
     static StaticQueue_t joints_queue_buffer;
     static uint8_t joints_queue_storage[JOINTS_QUEUE_STORAGE_SIZE];
 
@@ -103,6 +156,8 @@ void joints_queue_initialize(void)
                                                     &joints_queue_buffer);
 
     queue_manager_set(QUEUE_TYPE_JOINTS, joints_queue);
+
+    joint_queues_initialize();
 }
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
@@ -110,7 +165,7 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
     BaseType_t task_woken = pdFALSE;
 
     if (htim->Instance == TIM1) {
-        xTaskNotifyFromISR(joint_ctxs[JOINT_NUM_1].manager.joint_task,
+        xTaskNotifyFromISR(joints_manager.joint_ctxs[JOINT_NUM_1].task,
                            JOINT_NOTIFY_PWM_PULSE,
                            eSetBits,
                            &task_woken);
