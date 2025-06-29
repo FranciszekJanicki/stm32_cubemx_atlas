@@ -1,6 +1,7 @@
 #include "joints_task.h"
 #include "FreeRTOS.h"
 #include "atlas_notify.h"
+#include "atlas_utility.h"
 #include "joint_task.h"
 #include "joints_manager.h"
 #include "queue.h"
@@ -8,15 +9,13 @@
 #include "task.h"
 #include "task_manager.h"
 #include "tim.h"
-#include "utility.h"
 #include <assert.h>
 #include <stdint.h>
-#include <stdio.h>
 
 static char const* const TAG = "joints_task";
 
 #define JOINTS_TASK_STACK_DEPTH (4096U / sizeof(StackType_t))
-#define JOINTS_TASK_PRIORITY (2U)
+#define JOINTS_TASK_PRIORITY (1U)
 
 #define JOINTS_QUEUE_ITEMS (10U)
 #define JOINTS_QUEUE_ITEM_SIZE (sizeof(joints_event_t))
@@ -44,7 +43,7 @@ static void joints_task_func(void*)
     joints_manager_initialize(&joints_manager);
 
     while (1) {
-        LOG_ON_ERR(TAG, joints_manager_process(&joints_manager));
+        ATLAS_LOG_ON_ERR(TAG, joints_manager_process(&joints_manager));
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
@@ -54,7 +53,7 @@ void joint_tasks_initialize(void)
     static StackType_t joint_task_stacks[JOINT_NUM][JOINT_TASK_STACK_DEPTH];
     static StaticTask_t joint_task_buffers[JOINT_NUM];
 
-    for (uint8_t num = 0; num < JOINT_NUM; ++num) {
+    for (uint8_t num = 0U; num < JOINT_NUM; ++num) {
         joints_manager.joint_ctxs[num].task = joint_task_initialize(&joint_ctxs[num],
                                                                     &joint_task_buffers[num],
                                                                     &joint_task_stacks[num]);
@@ -66,7 +65,7 @@ void joint_queues_initialize(void)
     static uint8_t joint_queue_storages[JOINT_NUM][JOINT_QUEUE_STORAGE_SIZE];
     static StaticQueue_t joint_queue_buffers[JOINT_NUM];
 
-    for (uint8_t num = 0; num < JOINT_NUM; ++num) {
+    for (uint8_t num = 0U; num < JOINT_NUM; ++num) {
         joints_manager.joint_ctxs[num].queue = joint_queue_initialize(&joint_ctxs[num],
                                                                       &joint_queue_buffers[num],
                                                                       &joint_queue_storages[num]);
